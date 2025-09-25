@@ -8,7 +8,6 @@ from datetime import datetime
 import uvicorn
 import os
 from dotenv import load_dotenv
-from supabase import create_client, Client
 
 # Load environment variables
 load_dotenv()
@@ -23,17 +22,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Supabase configuration
-SUPABASE_URL = os.getenv("SUPABASE_URL", "your_supabase_url")
-SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY", "your_supabase_anon_key")
-
-try:
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-    print(f"✅ Connected to Supabase: {SUPABASE_URL}")
-except Exception as e:
-    print(f"❌ Supabase connection error: {e}")
-    supabase = None
 
 # WebSocket connection manager
 class ConnectionManager:
@@ -61,7 +49,6 @@ manager = ConnectionManager()
 # Store latest readings in memory
 latest_readings = {}
 readings_history = []
-device_last_seen = {}
 
 @app.get("/", response_class=HTMLResponse)
 async def get_dashboard():
@@ -73,39 +60,18 @@ async def receive_energy_data(reading: Dict[str, Any]):
     """Receive energy data from ESP32"""
     try:
         # Validate required fields
-        required_fields = ["device_id", "current", "voltage", "power"]  # Removed timestamp as required
+        required_fields = ["device_id", "timestamp", "current", "voltage", "power"]
         for field in required_fields:
             if field not in reading:
                 raise HTTPException(status_code=400, detail=f"Missing required field: {field}")
         
-        # Fix timestamp - use server time instead of ESP32's fake timestamp
-        server_time = datetime.now()
-        reading["timestamp"] = server_time.isoformat()
-        reading["server_received_at"] = server_time.isoformat()
-        
         # Store in memory
         latest_readings[reading["device_id"]] = reading
         readings_history.append(reading)
-        device_last_seen[reading["device_id"]] = server_time
         
         # Keep only last 1000 readings in memory
         if len(readings_history) > 1000:
             readings_history.pop(0)
-        
-        # Store in Supabase with corrected timestamp
-        if supabase:
-            try:
-                # Create a copy for database with proper timestamp (remove esp32_timestamp for now)
-                db_reading = reading.copy()
-                db_reading["timestamp"] = server_time.isoformat()
-                # Remove any fields that don't exist in the database
-                db_reading.pop("server_received_at", None)
-                
-                result = supabase.table("energy_readings").insert(db_reading).execute()
-                current_time = server_time.strftime("%H:%M:%S")
-                print(f"📊 [{current_time}] Stored in Supabase: {reading['device_id']} - {reading['power']}W")
-            except Exception as e:
-                print(f"❌ Supabase insert error: {e}")
         
         # Broadcast to WebSocket clients
         await manager.broadcast(json.dumps({
@@ -113,10 +79,9 @@ async def receive_energy_data(reading: Dict[str, Any]):
             "data": reading
         }))
         
-        current_time = server_time.strftime("%H:%M:%S")
-        print(f"📊 [{current_time}] Received data from {reading['device_id']}: {reading['power']}W")
+        print(f"📊 Received data from {reading['device_id']}: {reading['power']}W")
         
-        return {"status": "success", "message": "Data received and stored", "server_time": server_time.isoformat()}
+        return {"status": "success", "message": "Data received and stored"}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -124,25 +89,10 @@ async def receive_energy_data(reading: Dict[str, Any]):
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    # Check which devices are online (received data in last 30 seconds)
-    now = datetime.now()
-    online_devices = []
-    offline_devices = []
-    
-    for device_id, last_seen in device_last_seen.items():
-        time_diff = (now - last_seen).total_seconds()
-        if time_diff <= 30:  # 30 seconds timeout
-            online_devices.append(device_id)
-        else:
-            offline_devices.append(device_id)
-    
     return {
         "status": "healthy",
-        "timestamp": now.isoformat(),
-        "total_devices": len(device_last_seen),
-        "online_devices": online_devices,
-        "offline_devices": offline_devices,
-        "supabase_connected": supabase is not None
+        "timestamp": datetime.now().isoformat(),
+        "devices_connected": len(latest_readings)
     }
 
 @app.get("/api/latest-readings")
@@ -154,53 +104,6 @@ async def get_latest_readings():
 async def get_readings_history(limit: int = 100):
     """Get historical readings"""
     return readings_history[-limit:]
-
-@app.get("/api/supabase-data/{device_id}")
-async def get_supabase_data(device_id: str, limit: int = 10):
-    """Get data from Supabase for a specific device"""
-    if not supabase:
-        raise HTTPException(status_code=503, detail="Supabase not connected")
-    
-    try:
-        result = supabase.table("energy_readings").select("*").eq("device_id", device_id).order("timestamp", desc=True).limit(limit).execute()
-        return {
-            "device_id": device_id,
-            "count": len(result.data),
-            "data": result.data
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Supabase query error: {str(e)}")
-
-@app.get("/api/supabase-stats")
-async def get_supabase_stats():
-    """Get statistics from Supabase"""
-    if not supabase:
-        raise HTTPException(status_code=503, detail="Supabase not connected")
-    
-    try:
-        # Get total count
-        result = supabase.table("energy_readings").select("*", count="exact").execute()
-        total_count = result.count
-        
-        # Get unique devices
-        devices_result = supabase.table("energy_readings").select("device_id").execute()
-        unique_devices = list(set([row["device_id"] for row in devices_result.data]))
-        
-        # Get latest readings per device
-        latest_per_device = {}
-        for device in unique_devices:
-            latest = supabase.table("energy_readings").select("*").eq("device_id", device).order("timestamp", desc=True).limit(1).execute()
-            if latest.data:
-                latest_per_device[device] = latest.data[0]
-        
-        return {
-            "total_readings": total_count,
-            "unique_devices": len(unique_devices),
-            "devices": unique_devices,
-            "latest_per_device": latest_per_device
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Supabase stats error: {str(e)}")
 
 @app.get("/api/carbon-credits/{device_id}")
 async def calculate_carbon_credits(device_id: str):
@@ -265,7 +168,7 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
-# Enhanced Dashboard HTML with Supabase integration
+# Dashboard HTML
 dashboard_html = """
 <!DOCTYPE html>
 <html>
@@ -357,69 +260,14 @@ dashboard_html = """
             height: 300px; 
             margin: 20px 0; 
         }
-        .supabase-section {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .supabase-button {
-            background: #2196F3;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        .supabase-button:hover {
-            background: #1976D2;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 15px 0;
-        }
-        .device-offline {
-            opacity: 0.6;
-            border: 2px solid #f44336 !important;
-        }
-        .device-online {
-            border: 2px solid #4CAF50 !important;
-        }
-        .status {
-            font-size: 10px;
-            margin-left: 10px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🌞 ESP32 Carbon Credit Dashboard</h1>
-            <p>Real-time monitoring with Supabase integration</p>
+            <p>Real-time monitoring of solar energy generation and carbon credit calculation</p>
             <span id="connectionStatus" class="status offline">Connecting...</span>
-        </div>
-
-        <div class="supabase-section">
-            <h3>📊 Supabase Database Status</h3>
-            <div class="stats-grid" id="supabaseStats">
-                <div class="metric">
-                    <span>Total Readings:</span>
-                    <span class="metric-value" id="totalReadings">Loading...</span>
-                </div>
-                <div class="metric">
-                    <span>Unique Devices:</span>
-                    <span class="metric-value" id="uniqueDevices">Loading...</span>
-                </div>
-                <div class="metric">
-                    <span>Database Status:</span>
-                    <span class="metric-value" id="dbStatus">Loading...</span>
-                </div>
-            </div>
-            <button class="supabase-button" onclick="refreshSupabaseStats()">🔄 Refresh Stats</button>
-            <button class="supabase-button" onclick="viewSupabaseData()">📋 View Data</button>
         </div>
 
         <div id="devicesContainer"></div>
@@ -520,21 +368,8 @@ dashboard_html = """
             // Update carbon credits
             updateCarbonCredits(reading);
             
-            // Update timestamp - fix invalid date issue
-            try {
-                const timestamp = new Date(reading.timestamp);
-                if (isNaN(timestamp.getTime())) {
-                    // If timestamp is invalid, use current time
-                    lastUpdateElement.textContent = new Date().toLocaleString();
-                } else {
-                    lastUpdateElement.textContent = timestamp.toLocaleString();
-                }
-            } catch (e) {
-                lastUpdateElement.textContent = new Date().toLocaleString();
-            }
-            
-            // Update device last seen time and connection status
-            updateDeviceStatus(reading.device_id, reading.timestamp);
+            // Update timestamp
+            lastUpdateElement.textContent = new Date(reading.timestamp).toLocaleString();
         }
 
         function createDeviceCard(deviceId) {
@@ -542,11 +377,7 @@ dashboard_html = """
             card.className = 'card';
             card.id = `device-${deviceId}`;
             card.innerHTML = `
-                <h3>📱 Device: ${deviceId} <span class="status online" id="${deviceId}-status">Online</span></h3>
-                <div class="metric">
-                    <span>Last Seen:</span>
-                    <span class="metric-value" id="${deviceId}-lastseen">Never</span>
-                </div>
+                <h3>📱 Device: ${deviceId}</h3>
                 <div class="grid" style="grid-template-columns: 1fr 1fr;">
                     <div class="metric">
                         <span>Power:</span>
@@ -588,25 +419,18 @@ dashboard_html = """
         }
 
         function updateChart(reading) {
-            try {
-                const timestamp = new Date(reading.timestamp);
-                const time = isNaN(timestamp.getTime()) ? 
-                    new Date().toLocaleTimeString() : 
-                    timestamp.toLocaleTimeString();
-                
-                powerChart.data.labels.push(time);
-                powerChart.data.datasets[0].data.push(reading.power || 0);
-                
-                // Keep only last 20 points
-                if (powerChart.data.labels.length > 20) {
-                    powerChart.data.labels.shift();
-                    powerChart.data.datasets[0].data.shift();
-                }
-                
-                powerChart.update('none');
-            } catch (e) {
-                console.error('Error updating chart:', e);
+            const time = new Date(reading.timestamp).toLocaleTimeString();
+            
+            powerChart.data.labels.push(time);
+            powerChart.data.datasets[0].data.push(reading.power || 0);
+            
+            // Keep only last 20 points
+            if (powerChart.data.labels.length > 20) {
+                powerChart.data.labels.shift();
+                powerChart.data.datasets[0].data.shift();
             }
+            
+            powerChart.update('none');
         }
 
         function updateCarbonCredits(reading) {
@@ -618,32 +442,6 @@ dashboard_html = """
             totalCreditsElement.textContent = carbon_credits.toFixed(6);
         }
 
-        function refreshSupabaseStats() {
-            fetch('/api/supabase-stats')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('totalReadings').textContent = data.total_readings;
-                    document.getElementById('uniqueDevices').textContent = data.unique_devices;
-                    document.getElementById('dbStatus').textContent = 'Connected ✅';
-                    console.log('Supabase stats:', data);
-                })
-                .catch(error => {
-                    document.getElementById('dbStatus').textContent = 'Error ❌';
-                    console.error('Supabase stats error:', error);
-                });
-        }
-
-        function viewSupabaseData() {
-            const deviceIds = Object.keys(latest_readings);
-            if (deviceIds.length === 0) {
-                alert('No devices available');
-                return;
-            }
-            
-            const deviceId = deviceIds[0];
-            window.open(`/api/supabase-data/${deviceId}`, '_blank');
-        }
-
         // Fetch initial data
         fetch('/api/latest-readings')
             .then(response => response.json())
@@ -653,91 +451,6 @@ dashboard_html = """
                 });
             })
             .catch(error => console.error('Error fetching initial data:', error));
-
-        // Device status tracking
-        let deviceLastSeen = {};
-        const DEVICE_TIMEOUT = 30000; // 30 seconds timeout
-
-        function updateDeviceStatus(deviceId, timestamp) {
-            try {
-                const lastSeenTime = new Date(timestamp);
-                if (isNaN(lastSeenTime.getTime())) {
-                    // If timestamp is invalid, use current time
-                    deviceLastSeen[deviceId] = new Date();
-                } else {
-                    deviceLastSeen[deviceId] = lastSeenTime;
-                }
-                
-                // Update last seen display
-                const lastSeenElement = document.getElementById(`${deviceId}-lastseen`);
-                if (lastSeenElement) {
-                    lastSeenElement.textContent = deviceLastSeen[deviceId].toLocaleTimeString();
-                }
-                
-                // Update status to online
-                const statusElement = document.getElementById(`${deviceId}-status`);
-                if (statusElement) {
-                    statusElement.textContent = 'Online';
-                    statusElement.className = 'status online';
-                }
-            } catch (e) {
-                console.error('Error updating device status:', e);
-            }
-        }
-
-        function checkDeviceConnections() {
-            const now = new Date();
-            
-            Object.keys(deviceLastSeen).forEach(deviceId => {
-                const lastSeen = deviceLastSeen[deviceId];
-                const timeDiff = now - lastSeen;
-                
-                const statusElement = document.getElementById(`${deviceId}-status`);
-                const deviceCard = document.getElementById(`device-${deviceId}`);
-                
-                if (statusElement && deviceCard) {
-                    if (timeDiff > DEVICE_TIMEOUT) {
-                        statusElement.textContent = 'Offline';
-                        statusElement.className = 'status offline';
-                        deviceCard.className = 'card device-offline';
-                    } else {
-                        statusElement.textContent = 'Online';
-                        statusElement.className = 'status online';
-                        deviceCard.className = 'card device-online';
-                    }
-                }
-            });
-        }
-
-        function formatTimestamp(timestamp) {
-            try {
-                const date = new Date(timestamp);
-                if (isNaN(date.getTime())) {
-                    return 'Invalid Date';
-                }
-                // Format with local timezone
-                return date.toLocaleString(undefined, {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: false
-                });
-            } catch (e) {
-                return 'Invalid Date';
-            }
-        }
-
-        // Load Supabase stats on page load
-        refreshSupabaseStats();
-        
-        // Refresh Supabase stats every 30 seconds
-        setInterval(refreshSupabaseStats, 30000);
-        
-        // Check device connections every 5 seconds
-        setInterval(checkDeviceConnections, 5000);
     </script>
 </body>
 </html>
@@ -746,8 +459,7 @@ dashboard_html = """
 if __name__ == "__main__":
     # Railway provides PORT environment variable
     port = int(os.getenv("PORT", 5000))
-    print(f"🚀 Starting ESP32 Carbon Credit Backend with Supabase on port {port}")
+    print(f"🚀 Starting ESP32 Carbon Credit Backend on port {port}")
     print(f"📊 Dashboard: http://localhost:{port}")
     print(f"🔌 ESP32 endpoint: http://localhost:{port}/api/energy-data")
-    print(f"📋 Supabase stats: http://localhost:{port}/api/supabase-stats")
     uvicorn.run(app, host="0.0.0.0", port=port)
