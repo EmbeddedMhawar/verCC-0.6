@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 from dashboard_content import dashboard_html
 from guardian_integration import guardian_processor
+from ams_dashboard_integration import ams_integration
 
 # Load environment variables
 load_dotenv()
@@ -107,6 +108,12 @@ async def receive_energy_data(reading: Dict[str, Any]):
             print(f"🔧 Tool 10: Processed {reading['device_id']} data through Guardian pipeline")
         except Exception as e:
             print(f"❌ Guardian Tool 10 error: {e}")
+        
+        # 🌱 NEW: Process through AMS-I.D Aggregation Pipeline
+        try:
+            await ams_integration.process_esp32_data(reading)
+        except Exception as e:
+            print(f"❌ AMS-I.D processing error: {e}")
         
         # Store in Supabase with corrected timestamp
         if supabase:
@@ -319,6 +326,56 @@ async def get_aggregated_data():
         "total_reports": len(guardian_processor.aggregated_data),
         "total_emission_reductions": sum(a.emission_reductions_tco2 for a in guardian_processor.aggregated_data)
     }
+
+# AMS-I.D Integration Endpoints
+@app.get("/api/ams-id/status")
+async def get_ams_id_status():
+    """Get AMS-I.D integration status"""
+    return ams_integration.get_status_summary()
+
+@app.get("/api/ams-id/metrics")
+async def get_ams_id_metrics():
+    """Get AMS-I.D metrics for dashboard"""
+    return ams_integration.get_dashboard_metrics()
+
+@app.post("/api/ams-id/initialize")
+async def initialize_ams_id():
+    """Initialize AMS-I.D integration"""
+    try:
+        success = await ams_integration.initialize()
+        return {
+            "success": success,
+            "message": "AMS-I.D integration initialized successfully" if success else "Initialization failed"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/ams-id/aggregate/{device_id}")
+async def trigger_ams_aggregation(device_id: str, hours: int = 1):
+    """Trigger AMS-I.D aggregation for a device"""
+    try:
+        result = await ams_integration.trigger_aggregation(device_id, hours)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/ams-id/workflow/{device_id}")
+async def run_ams_complete_workflow(device_id: str):
+    """Run complete AMS-I.D workflow: Aggregate → Submit to Guardian"""
+    try:
+        result = await ams_integration.run_complete_workflow(device_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/ams-id/workflow/all")
+async def run_ams_workflow_all_devices():
+    """Run AMS-I.D workflow for all devices"""
+    try:
+        result = await ams_integration.run_complete_workflow()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

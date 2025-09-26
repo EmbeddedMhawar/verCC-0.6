@@ -1,0 +1,22 @@
+{
+  "id": "43615260-8fc3-49f7-9727-64c8b2e0e1fc",
+  "blockType": "interfaceContainerBlock",
+  "actionType": "local",
+  "readonly": false,
+  "uiMetaData": {
+    "type": "blank"
+  },
+  "blocks": [
+    null,
+    {
+      "uiMetaData": {
+        "type": "tabs"
+      },
+      "content": "interfaceContainerBlock",
+      "blockType": "interfaceContainerBlock",
+      "id": "0f0589d0-31af-40fe-8194-322fd77874fa"
+    },
+    null,
+    null
+  ]
+}

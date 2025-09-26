@@ -77,7 +77,7 @@ class GuardianClient:
                 json=token_data
             )
             
-            if response.status_code == 200:
+            if response.status_code in [200, 201]:
                 result = response.json()
                 self.access_token = result.get("accessToken")
                 logger.info("Successfully obtained access token")

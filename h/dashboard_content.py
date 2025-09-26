@@ -154,6 +154,197 @@ dashboard_html = """<!DOCTYPE html>
             <!-- Devices Container -->
             <div id="devicesContainer" class="space-y-4 mb-6"></div>
 
+            <!-- AMS-I.D Integration Section -->
+            <div class="card-3d rounded-2xl p-8 border border-gray-200 mb-8 animate-fade-in">
+                <div class="flex items-center mb-6">
+                    <div class="bg-gradient-to-r from-oasis-green to-desert-sand text-white rounded-full h-12 w-12 flex items-center justify-center mr-4">
+                        <i data-lucide="leaf" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-deep-ocean">AMS-I.D Carbon Credit System</h3>
+                        <p class="text-gray-600">Automatic aggregation and Guardian submission</p>
+                    </div>
+                </div>
+
+                <!-- AMS-I.D Status Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <!-- Status -->
+                    <div class="rounded-xl p-6 border border-gray-200 bg-gradient-to-br from-cloud-white to-gray-50 shadow-lg">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-oasis-green text-cloud-white rounded-full h-10 w-10 flex items-center justify-center mr-3">
+                                <i data-lucide="activity" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-deep-ocean">System Status</h4>
+                                <p class="text-sm text-gray-600">AMS-I.D Integration</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Status</span>
+                                    <span class="text-sm font-semibold" id="ams-status">
+                                        <span class="inline-block w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
+                                        Initializing...
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Guardian</span>
+                                    <span class="text-sm font-semibold" id="ams-guardian-status">
+                                        <span class="inline-block w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
+                                        Connecting...
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Measurements -->
+                    <div class="rounded-xl p-6 border border-gray-200 bg-gradient-to-br from-cloud-white to-gray-50 shadow-lg">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-desert-sand text-deep-ocean rounded-full h-10 w-10 flex items-center justify-center mr-3">
+                                <i data-lucide="database" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-deep-ocean">Data Processing</h4>
+                                <p class="text-sm text-gray-600">Measurements & Buffer</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Processed</span>
+                                    <span class="text-lg font-bold text-deep-ocean" id="ams-measurements">0</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Buffer</span>
+                                    <span class="text-lg font-bold text-deep-ocean" id="ams-buffer">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submissions -->
+                    <div class="rounded-xl p-6 border border-gray-200 bg-gradient-to-br from-cloud-white to-gray-50 shadow-lg">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-deep-ocean text-cloud-white rounded-full h-10 w-10 flex items-center justify-center mr-3">
+                                <i data-lucide="send" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-deep-ocean">Guardian Submissions</h4>
+                                <p class="text-sm text-gray-600">Projects & Reports</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Projects</span>
+                                    <span class="text-lg font-bold text-deep-ocean" id="ams-projects">0</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Reports</span>
+                                    <span class="text-lg font-bold text-deep-ocean" id="ams-reports">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Carbon Credits -->
+                    <div class="rounded-xl p-6 border border-gray-200 bg-gradient-to-br from-oasis-green to-desert-sand shadow-lg text-white">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-white/20 rounded-full h-10 w-10 flex items-center justify-center mr-3">
+                                <i data-lucide="leaf" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">Carbon Credits</h4>
+                                <p class="text-sm opacity-90">AMS-I.D Generated</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-white/10 rounded-lg p-3 border border-white/20">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm font-medium opacity-90">Total</span>
+                                    <span class="text-lg font-bold" id="ams-carbon-credits">0.000</span>
+                                </div>
+                            </div>
+                            <div class="bg-white/10 rounded-lg p-3 border border-white/20">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm font-medium opacity-90">Energy</span>
+                                    <span class="text-lg font-bold" id="ams-energy">0.000 MWh</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AMS-I.D Controls -->
+                <div class="rounded-xl p-6 border border-gray-200 bg-gradient-to-br from-cloud-white to-gray-50 shadow-lg mb-6">
+                    <div class="flex items-center mb-6">
+                        <div class="bg-deep-ocean text-cloud-white rounded-full h-10 w-10 flex items-center justify-center mr-3">
+                            <i data-lucide="settings" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-deep-ocean">AMS-I.D Workflow Controls</h4>
+                            <p class="text-gray-600 text-sm">Manual triggers and system management</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Device Selection -->
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 mb-4">
+                        <label for="ams-device-select" class="block text-sm font-medium text-deep-ocean mb-2">Select Device for AMS-I.D Processing:</label>
+                        <select id="ams-device-select" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-desert-sand focus:border-transparent bg-white">
+                            <option value="">All devices</option>
+                        </select>
+                    </div>
+
+                    <!-- Control Buttons -->
+                    <div class="flex flex-wrap gap-3 justify-center mb-4">
+                        <button onclick="initializeAMSID()" 
+                                class="bg-oasis-green text-cloud-white font-semibold px-6 py-3 rounded-lg hover:brightness-105 transition-transform hover:scale-105 shadow-lg text-sm flex items-center">
+                            <i data-lucide="power" class="w-4 h-4 mr-2"></i>
+                            Initialize AMS-I.D
+                        </button>
+                        <button onclick="triggerAMSAggregation()" 
+                                class="bg-desert-sand text-deep-ocean font-semibold px-6 py-3 rounded-lg hover:brightness-105 transition-transform hover:scale-105 shadow-lg text-sm flex items-center">
+                            <i data-lucide="layers" class="w-4 h-4 mr-2"></i>
+                            Trigger Aggregation
+                        </button>
+                        <button onclick="runAMSWorkflow()" 
+                                class="bg-gradient-to-r from-oasis-green to-desert-sand text-cloud-white font-semibold px-6 py-3 rounded-lg hover:brightness-105 transition-transform hover:scale-105 shadow-lg text-sm flex items-center">
+                            <i data-lucide="play-circle" class="w-4 h-4 mr-2"></i>
+                            Run Complete Workflow
+                        </button>
+                        <button onclick="refreshAMSStatus()" 
+                                class="bg-deep-ocean text-cloud-white font-semibold px-6 py-3 rounded-lg hover:brightness-105 transition-colors shadow-lg text-sm flex items-center">
+                            <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
+                            Refresh Status
+                        </button>
+                    </div>
+
+                    <!-- AMS-I.D Activity Log -->
+                    <div class="bg-cloud-white rounded-lg border border-gray-200 p-4 shadow-inner">
+                        <div class="flex items-center mb-3">
+                            <div class="bg-gray-100 text-deep-ocean rounded-full h-8 w-8 flex items-center justify-center mr-3">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                            </div>
+                            <h5 class="font-semibold text-deep-ocean">AMS-I.D Activity Log</h5>
+                        </div>
+                        <div id="ams-activity-log" class="space-y-2 max-h-32 overflow-y-auto text-sm">
+                            <div class="text-gray-500 italic flex items-center">
+                                <span class="inline-block w-2 h-2 bg-desert-sand rounded-full mr-2 animate-pulse"></span>
+                                AMS-I.D system ready for initialization...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Guardian Tools Architecture Section -->
             <div class="card-3d rounded-2xl p-8 border border-gray-200 mb-8 animate-fade-in">
                 <div class="flex items-center mb-6">
@@ -612,6 +803,7 @@ dashboard_html = """<!DOCTYPE html>
                 
                 // Update Guardian device selector when new device appears
                 updateGuardianDeviceSelect();
+                updateAMSDeviceSelect();
                 addGuardianLog(`📱 New device detected: ${reading.device_id}`);
             }
 
@@ -806,6 +998,155 @@ dashboard_html = """<!DOCTYPE html>
             document.getElementById('tool03-reductions').textContent = status.tool_03_hedera.total_verified_reductions.toFixed(6) + ' tCO2';
         }
 
+        // AMS-I.D Functions
+        async function initializeAMSID() {
+            addAMSActivity('🔧 Initializing AMS-I.D system...');
+            
+            try {
+                const response = await fetch('/api/ams-id/initialize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    addAMSActivity('✅ AMS-I.D system initialized successfully');
+                    refreshAMSStatus();
+                } else {
+                    addAMSActivity(`❌ Initialization failed: ${result.message}`);
+                }
+            } catch (error) {
+                addAMSActivity(`❌ Error: ${error.message}`);
+            }
+        }
+
+        async function triggerAMSAggregation() {
+            const deviceSelect = document.getElementById('ams-device-select');
+            const selectedDevice = deviceSelect.value || 'all';
+            
+            addAMSActivity(`🔄 Triggering AMS-I.D aggregation for ${selectedDevice}...`);
+            
+            try {
+                const endpoint = selectedDevice === 'all' ? 
+                    '/api/ams-id/aggregate/ESP32_001?hours=24' : 
+                    `/api/ams-id/aggregate/${selectedDevice}?hours=24`;
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const report = result.report;
+                    addAMSActivity(`✅ Aggregation successful: ${report.total_energy_mwh.toFixed(3)} MWh, ${report.emission_reductions_tco2.toFixed(6)} tCO2e`);
+                    refreshAMSStatus();
+                } else {
+                    addAMSActivity(`❌ Aggregation failed: ${result.message}`);
+                }
+            } catch (error) {
+                addAMSActivity(`❌ Error: ${error.message}`);
+            }
+        }
+
+        async function runAMSWorkflow() {
+            const deviceSelect = document.getElementById('ams-device-select');
+            const selectedDevice = deviceSelect.value;
+            
+            addAMSActivity(`🚀 Starting complete AMS-I.D workflow...`);
+            
+            try {
+                const endpoint = selectedDevice ? 
+                    `/api/ams-id/workflow/${selectedDevice}` : 
+                    '/api/ams-id/workflow/all';
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    addAMSActivity('✅ Complete AMS-I.D workflow successful!');
+                    addAMSActivity('📤 Data submitted to Guardian via AMS-I.D policy');
+                    refreshAMSStatus();
+                    updateTotalCredits(); // Update main carbon credits display
+                } else {
+                    addAMSActivity(`❌ Workflow failed: ${result.message}`);
+                }
+            } catch (error) {
+                addAMSActivity(`❌ Error: ${error.message}`);
+            }
+        }
+
+        async function refreshAMSStatus() {
+            try {
+                const response = await fetch('/api/ams-id/metrics');
+                const metrics = await response.json();
+                
+                // Update status indicators
+                const statusElement = document.getElementById('ams-status');
+                const guardianStatusElement = document.getElementById('ams-guardian-status');
+                
+                if (metrics.ams_id_status === 'online') {
+                    statusElement.innerHTML = '<span class="inline-block w-2 h-2 bg-oasis-green rounded-full mr-2 animate-pulse"></span><span class="text-oasis-green">Online</span>';
+                } else {
+                    statusElement.innerHTML = '<span class="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span><span class="text-red-500">Offline</span>';
+                }
+                
+                if (metrics.guardian_status === 'authenticated') {
+                    guardianStatusElement.innerHTML = '<span class="inline-block w-2 h-2 bg-oasis-green rounded-full mr-2 animate-pulse"></span><span class="text-oasis-green">Connected</span>';
+                } else {
+                    guardianStatusElement.innerHTML = '<span class="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span><span class="text-red-500">Disconnected</span>';
+                }
+                
+                // Update metrics
+                document.getElementById('ams-measurements').textContent = metrics.measurements_processed;
+                document.getElementById('ams-buffer').textContent = metrics.buffer_count;
+                document.getElementById('ams-projects').textContent = metrics.projects_submitted;
+                document.getElementById('ams-reports').textContent = metrics.reports_submitted;
+                document.getElementById('ams-carbon-credits').textContent = metrics.total_carbon_credits.toFixed(6);
+                document.getElementById('ams-energy').textContent = `${metrics.total_energy_mwh.toFixed(3)} MWh`;
+                
+                // Update main carbon credits display
+                const mainCreditsElement = document.getElementById('totalCredits');
+                if (mainCreditsElement) {
+                    const currentCredits = parseFloat(mainCreditsElement.textContent) || 0;
+                    const newTotal = currentCredits + metrics.total_carbon_credits;
+                    mainCreditsElement.textContent = newTotal.toFixed(6);
+                }
+                
+            } catch (error) {
+                console.error('Error refreshing AMS status:', error);
+            }
+        }
+
+        function addAMSActivity(message) {
+            const logContainer = document.getElementById('ams-activity-log');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'flex items-start text-sm';
+            logEntry.innerHTML = `
+                <span class="text-gray-400 text-xs mr-2 mt-0.5 font-mono">${timestamp}</span>
+                <span class="flex-1">${message}</span>
+            `;
+            
+            logContainer.appendChild(logEntry);
+            
+            // Keep only last 10 entries
+            while (logContainer.children.length > 10) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+            
+            // Scroll to bottom
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Guardian Tools Functions
         function triggerAggregation() {
             const deviceSelect = document.getElementById('guardian-device-select');
             const selectedDevice = deviceSelect.value;
@@ -914,6 +1255,22 @@ dashboard_html = """<!DOCTYPE html>
             });
         }
 
+        function updateAMSDeviceSelect() {
+            const deviceSelect = document.getElementById('ams-device-select');
+            const currentDevices = Object.keys(latest_readings);
+            
+            // Clear existing options except the first one
+            deviceSelect.innerHTML = '<option value="">All devices</option>';
+            
+            // Add current devices
+            currentDevices.forEach(deviceId => {
+                const option = document.createElement('option');
+                option.value = deviceId;
+                option.textContent = deviceId;
+                deviceSelect.appendChild(option);
+            });
+        }
+
         function sendToGuardian() {
             // Legacy function - now redirects to complete workflow
             const deviceIds = Object.keys(latest_readings);
@@ -951,6 +1308,12 @@ dashboard_html = """<!DOCTYPE html>
             
             // Auto-refresh Guardian status every 30 seconds
             setInterval(refreshGuardianStatus, 30000);
+            
+            // Auto-refresh AMS-I.D status every 30 seconds
+            setInterval(refreshAMSStatus, 30000);
+            
+            // Initialize AMS-I.D status on page load
+            setTimeout(refreshAMSStatus, 2000);
             
             // Initialize Lucide icons
             lucide.createIcons();
