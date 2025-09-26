@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Dependency Tracker",
+  "description": "Analyzes dependencies starting from main file and dashboard, creates an MD file tracking all dependencies, and identifies files that don't contribute to main functionality for removal (while keeping database folder and assets)",
+  "version": "1",
+  "when": {
+    "type": "userTriggered",
+    "patterns": [
+      "src/main.py",
+      "src/dashboard_content.py",
+      "src/*.py",
+      "requirements.txt"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Analyze the dependency chain starting from src/main.py and src/dashboard_content.py. Trace through all Python imports and dependencies recursively. Create a comprehensive markdown file (docs/DEPENDENCY_ANALYSIS.md) that maps out the complete dependency tree. Identify any files in the src/ directory that are not part of this dependency chain and recommend them for removal. Always preserve the database/ folder and assets/ folder regardless of dependencies. Include analysis of requirements.txt dependencies as well."
+  }
+}
