@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "File Structure Organizer",
+  "description": "Monitors file changes across the workspace and automatically organizes the file structure by categorizing files into appropriate folders, cleaning up loose files, and maintaining a logical directory hierarchy",
+  "version": "1",
+  "when": {
+    "type": "userTriggered",
+    "patterns": [
+      "**/*"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A file has been modified in the workspace. Please analyze the current file structure and organize it by:\n1. Moving loose files at the root level into appropriate categorized folders\n2. Grouping related files together (e.g., documentation, configuration, source code)\n3. Creating logical folder hierarchies\n4. Ensuring consistent naming conventions\n5. Removing any empty or redundant directories\n\nCurrent workspace structure shows files scattered across multiple levels with some organization already in place (h/ folder, hardware/ folder, etc.). Focus on improving the overall organization while preserving existing functional groupings."
+  }
+}

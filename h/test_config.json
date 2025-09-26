@@ -1,0 +1,32 @@
+{
+  "mrv_sender": {
+    "base_url": "http://localhost:3005",
+    "timeout": 30,
+    "retry_attempts": 3,
+    "delay_between_requests": 0.5
+  },
+  "test_data": {
+    "single_report": {
+      "field0": "ProjectID123",
+      "field1": "Grid connected renewable electricity generation",
+      "field6": "1500.75"
+    },
+    "multiple_reports": [
+      {
+        "field0": "SOLAR_FARM_001",
+        "field1": "Grid connected renewable electricity generation",
+        "field6": "1450.0"
+      },
+      {
+        "field0": "WIND_FARM_002",
+        "field1": "Grid connected renewable electricity generation",
+        "field6": "2125.0"
+      },
+      {
+        "field0": "HYDRO_PLANT_003",
+        "field1": "Grid connected renewable electricity generation",
+        "field6": "1770.0"
+      }
+    ]
+  }
+}

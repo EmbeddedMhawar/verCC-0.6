@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Steps File Processor",
+  "description": "When any StepsX.md file is provided or modified, read the file content and follow the reasoning to test every step before moving to other tasks",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/Steps*.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A StepsX.md file has been modified. Please read the content of this file carefully and follow the reasoning provided. Test every step mentioned in the file thoroughly before proceeding to any other tasks. Ensure each step is validated and working correctly according to the instructions in the file."
+  }
+}

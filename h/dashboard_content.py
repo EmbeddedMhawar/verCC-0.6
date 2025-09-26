@@ -123,8 +123,8 @@ dashboard_html = """<!DOCTYPE html>
                          style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); max-width:150px;"
                          onerror="this.onerror=null; this.src='/static/verifiedcc-logo.png';"/>
                     <div>
-                        <h1 class="text-2xl font-bold text-deep-ocean">Carbon Credit Dashboard</h1>
-                        <p class="text-sm text-gray-600">Real-time monitoring & verification</p>
+                        <h1 class="text-2xl font-bold text-deep-ocean">VerifiedCC Dashboard</h1>
+                        <p class="text-sm text-gray-600">ESP32 Monitoring + Guardian Tools Architecture</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -154,29 +154,206 @@ dashboard_html = """<!DOCTYPE html>
             <!-- Devices Container -->
             <div id="devicesContainer" class="space-y-4 mb-6"></div>
 
-            <!-- Guardian Integration Section -->
+            <!-- Guardian Tools Architecture Section -->
             <div class="card-3d rounded-2xl p-8 border border-gray-200 mb-8 animate-fade-in">
                 <div class="flex items-center mb-6">
                     <div class="bg-deep-ocean text-white rounded-full h-12 w-12 flex items-center justify-center mr-4">
                         <i data-lucide="shield-check" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <h3 class="text-2xl font-bold text-deep-ocean">Guardian Integration</h3>
-                        <p class="text-gray-600">Official carbon credit verification platform</p>
+                        <h3 class="text-2xl font-bold text-deep-ocean">Guardian Tools Architecture</h3>
+                        <p class="text-gray-600">Real-time MRV processing pipeline</p>
                     </div>
                 </div>
-                <div class="flex flex-wrap gap-4 mb-4">
-                    <button onclick="sendToGuardian()" 
-                            class="bg-desert-sand text-deep-ocean font-semibold px-6 py-3 rounded-lg hover:brightness-105 transition-transform hover:scale-105 shadow-lg">
-                        <i data-lucide="send" class="w-4 h-4 inline mr-2"></i>
-                        Send to Guardian
-                    </button>
-                    <button onclick="viewGuardianData()" 
-                            class="bg-oasis-green text-white font-semibold px-6 py-3 rounded-lg hover:bg-green-700 transition-colors shadow-lg">
-                        <i data-lucide="eye" class="w-4 h-4 inline mr-2"></i>
-                        View Guardian Format
-                    </button>
+
+                <!-- Guardian Tools Status Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <!-- Tool 10: Data Source -->
+                    <div class="rounded-xl p-6 border border-gray-200 bg-gradient-to-br from-cloud-white to-gray-50 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-oasis-green text-cloud-white rounded-full h-10 w-10 flex items-center justify-center mr-3">
+                                <i data-lucide="database" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-deep-ocean">Tool 10 - Data Source</h4>
+                                <p class="text-sm text-gray-600">ESP32 IoT Sensors</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Data Points</span>
+                                    <span class="text-lg font-bold text-deep-ocean" id="tool10-data-points">0</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Active Devices</span>
+                                    <span class="text-lg font-bold text-deep-ocean" id="tool10-devices">0</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Status</span>
+                                    <span class="text-sm font-semibold text-oasis-green" id="tool10-status">
+                                        <span class="inline-block w-2 h-2 bg-oasis-green rounded-full mr-2 animate-pulse"></span>
+                                        Online
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tool 07: Aggregation -->
+                    <div class="rounded-xl p-6 border border-gray-200 bg-gradient-to-br from-cloud-white to-gray-50 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-desert-sand text-deep-ocean rounded-full h-10 w-10 flex items-center justify-center mr-3">
+                                <i data-lucide="settings" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-deep-ocean">Tool 07 - Aggregation</h4>
+                                <p class="text-sm text-gray-600">Data Processing</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Reports</span>
+                                    <span class="text-lg font-bold text-deep-ocean" id="tool07-reports">0</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Energy</span>
+                                    <span class="text-lg font-bold text-deep-ocean" id="tool07-energy">0 kWh</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Emissions</span>
+                                    <span class="text-lg font-bold text-deep-ocean" id="tool07-emissions">0 tCO2</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tool 03: Hedera -->
+                    <div class="rounded-xl p-6 border border-gray-200 bg-gradient-to-br from-cloud-white to-gray-50 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-deep-ocean text-cloud-white rounded-full h-10 w-10 flex items-center justify-center mr-3">
+                                <i data-lucide="link" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-deep-ocean">Tool 03 - Hedera</h4>
+                                <p class="text-sm text-gray-600">Verification</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Records</span>
+                                    <span class="text-lg font-bold text-deep-ocean" id="tool03-records">0</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Verified</span>
+                                    <span class="text-lg font-bold text-deep-ocean" id="tool03-verified">0</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 text-sm font-medium">Reductions</span>
+                                    <span class="text-lg font-bold text-deep-ocean" id="tool03-reductions">0 tCO2</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Guardian Workflow Controls -->
+                <div class="rounded-xl p-6 border border-gray-200 bg-gradient-to-br from-cloud-white to-gray-50 shadow-lg">
+                    <div class="flex items-center mb-6">
+                        <div class="bg-deep-ocean text-cloud-white rounded-full h-10 w-10 flex items-center justify-center mr-3">
+                            <i data-lucide="workflow" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-deep-ocean">Guardian Tools Workflow</h4>
+                            <p class="text-gray-600 text-sm">Complete MRV processing pipeline</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Workflow Flow Diagram -->
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 mb-6">
+                        <div class="flex items-center justify-center overflow-x-auto">
+                            <div class="flex items-center space-x-2 min-w-max">
+                                <div class="bg-oasis-green text-cloud-white px-3 py-2 rounded-lg text-xs font-semibold text-center shadow-lg min-w-[80px]">
+                                    <div class="font-bold">Tool 10</div>
+                                    <div class="text-xs opacity-90">Data Source</div>
+                                </div>
+                                <i data-lucide="arrow-right" class="w-4 h-4 text-gray-400 flex-shrink-0"></i>
+                                <div class="bg-desert-sand text-deep-ocean px-3 py-2 rounded-lg text-xs font-semibold text-center shadow-lg min-w-[80px]">
+                                    <div class="font-bold">Tool 07</div>
+                                    <div class="text-xs opacity-90">Aggregation</div>
+                                </div>
+                                <i data-lucide="arrow-right" class="w-4 h-4 text-gray-400 flex-shrink-0"></i>
+                                <div class="bg-deep-ocean text-cloud-white px-3 py-2 rounded-lg text-xs font-semibold text-center shadow-lg min-w-[80px]">
+                                    <div class="font-bold">Tool 03</div>
+                                    <div class="text-xs opacity-90">Hedera</div>
+                                </div>
+                                <i data-lucide="arrow-right" class="w-4 h-4 text-gray-400 flex-shrink-0"></i>
+                                <div class="bg-gradient-to-r from-oasis-green to-desert-sand text-cloud-white px-3 py-2 rounded-lg text-xs font-semibold text-center shadow-lg min-w-[80px]">
+                                    <div class="font-bold">Guardian</div>
+                                    <div class="text-xs opacity-90">MRV Report</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Device Selection and Controls -->
+                    <div class="space-y-4 mb-6">
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                            <label for="guardian-device-select" class="block text-sm font-medium text-deep-ocean mb-2">Select Device:</label>
+                            <select id="guardian-device-select" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-desert-sand focus:border-transparent bg-white">
+                                <option value="">Choose ESP32 device...</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-wrap gap-3 justify-center">
+                            <button onclick="triggerAggregation()" 
+                                    class="bg-desert-sand text-deep-ocean font-semibold px-6 py-3 rounded-lg hover:brightness-105 transition-transform hover:scale-105 shadow-lg text-sm flex items-center">
+                                <i data-lucide="settings" class="w-4 h-4 mr-2"></i>
+                                Trigger Aggregation
+                            </button>
+                            <button onclick="runCompleteWorkflow()" 
+                                    class="bg-oasis-green text-cloud-white font-semibold px-6 py-3 rounded-lg hover:brightness-105 transition-transform hover:scale-105 shadow-lg text-sm flex items-center">
+                                <i data-lucide="play" class="w-4 h-4 mr-2"></i>
+                                Run Complete Workflow
+                            </button>
+                            <button onclick="refreshGuardianStatus()" 
+                                    class="bg-deep-ocean text-cloud-white font-semibold px-6 py-3 rounded-lg hover:brightness-105 transition-colors shadow-lg text-sm flex items-center">
+                                <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
+                                Refresh Status
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Activity Log -->
+                    <div class="bg-cloud-white rounded-lg border border-gray-200 p-4 shadow-inner">
+                        <div class="flex items-center mb-3">
+                            <div class="bg-gray-100 text-deep-ocean rounded-full h-8 w-8 flex items-center justify-center mr-3">
+                                <i data-lucide="activity" class="w-4 h-4"></i>
+                            </div>
+                            <h5 class="font-semibold text-deep-ocean">Activity Log</h5>
+                        </div>
+                        <div id="guardian-activity-log" class="space-y-2 max-h-32 overflow-y-auto text-sm">
+                            <div class="text-gray-500 italic flex items-center">
+                                <span class="inline-block w-2 h-2 bg-oasis-green rounded-full mr-2 animate-pulse"></span>
+                                Guardian Tools initialized and ready...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="guardianStatus" class="mt-4"></div>
             </div>
 
@@ -432,6 +609,10 @@ dashboard_html = """<!DOCTYPE html>
             if (!deviceCard) {
                 deviceCard = createDeviceCard(reading.device_id);
                 devicesContainer.appendChild(deviceCard);
+                
+                // Update Guardian device selector when new device appears
+                updateGuardianDeviceSelect();
+                addGuardianLog(`📱 New device detected: ${reading.device_id}`);
             }
 
             // Update metrics
@@ -442,6 +623,9 @@ dashboard_html = """<!DOCTYPE html>
             
             // Update timestamp
             lastUpdateElement.textContent = new Date(reading.timestamp).toLocaleString();
+            
+            // Store reading globally for Guardian functions
+            latest_readings[reading.device_id] = reading;
         }
 
 
@@ -591,8 +775,147 @@ dashboard_html = """<!DOCTYPE html>
             totalCreditsElement.textContent = carbon_credits.toFixed(6);
         }
 
+        // Guardian Tools Functions
+        function refreshGuardianStatus() {
+            addGuardianLog('Refreshing Guardian Tools status...');
+            
+            fetch('/api/guardian/status')
+                .then(response => response.json())
+                .then(status => {
+                    updateGuardianToolsStatus(status);
+                    addGuardianLog('✅ Status refreshed successfully');
+                })
+                .catch(error => {
+                    addGuardianLog('❌ Error refreshing status: ' + error.message);
+                });
+        }
+
+        function updateGuardianToolsStatus(status) {
+            // Tool 10 - Data Source
+            document.getElementById('tool10-data-points').textContent = status.tool_10_data_source.raw_data_points;
+            document.getElementById('tool10-devices').textContent = status.tool_10_data_source.devices_active;
+            
+            // Tool 07 - Aggregation
+            document.getElementById('tool07-reports').textContent = status.tool_07_aggregation.aggregated_reports;
+            document.getElementById('tool07-energy').textContent = status.tool_07_aggregation.total_energy_processed.toFixed(3) + ' kWh';
+            document.getElementById('tool07-emissions').textContent = status.tool_07_aggregation.total_emission_reductions.toFixed(6) + ' tCO2';
+            
+            // Tool 03 - Hedera
+            document.getElementById('tool03-records').textContent = status.tool_03_hedera.hedera_records;
+            document.getElementById('tool03-verified').textContent = status.tool_03_hedera.verified_records;
+            document.getElementById('tool03-reductions').textContent = status.tool_03_hedera.total_verified_reductions.toFixed(6) + ' tCO2';
+        }
+
+        function triggerAggregation() {
+            const deviceSelect = document.getElementById('guardian-device-select');
+            const selectedDevice = deviceSelect.value;
+            
+            if (!selectedDevice) {
+                alert('Please select a device first');
+                return;
+            }
+            
+            addGuardianLog(`🔄 Triggering aggregation for ${selectedDevice}...`);
+            
+            fetch(`/api/guardian/aggregate/${selectedDevice}`, {
+                method: 'POST'
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        addGuardianLog(`✅ Aggregation completed for ${selectedDevice}`);
+                        addGuardianLog(`📊 Energy: ${result.data.total_energy_kwh.toFixed(3)} kWh, Emissions: ${result.data.emission_reductions_tco2.toFixed(6)} tCO2`);
+                        refreshGuardianStatus();
+                    } else {
+                        addGuardianLog(`❌ Aggregation failed: ${result.message}`);
+                    }
+                })
+                .catch(error => {
+                    addGuardianLog('❌ Error triggering aggregation: ' + error.message);
+                });
+        }
+
+        function runCompleteWorkflow() {
+            const deviceSelect = document.getElementById('guardian-device-select');
+            const selectedDevice = deviceSelect.value;
+            
+            if (!selectedDevice) {
+                alert('Please select a device first');
+                return;
+            }
+            
+            addGuardianLog(`🚀 Starting complete workflow for ${selectedDevice}...`);
+            
+            fetch(`/api/guardian/workflow/${selectedDevice}`, {
+                method: 'POST'
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        addGuardianLog(`✅ Complete workflow finished for ${selectedDevice}`);
+                        addGuardianLog(`📊 Emission reductions: ${result.aggregated_data.emission_reductions_tco2.toFixed(6)} tCO2`);
+                        addGuardianLog(`🔗 Hedera TX: ${result.hedera_record.hedera_transaction_id}`);
+                        addGuardianLog(`🛡️ Guardian submitted: ${result.guardian_submitted ? 'Yes' : 'No'}`);
+                        refreshGuardianStatus();
+                        
+                        // Show success notification
+                        document.getElementById('guardianStatus').innerHTML = 
+                            `<div class="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+                                <div class="flex items-center mb-2">
+                                    <i data-lucide="check-circle" class="w-5 h-5 text-oasis-green mr-2"></i>
+                                    <p class="text-oasis-green font-semibold">Guardian workflow completed successfully!</p>
+                                </div>
+                                <div class="text-sm text-green-700">
+                                    <p>• Emission reductions: ${result.aggregated_data.emission_reductions_tco2.toFixed(6)} tCO2</p>
+                                    <p>• Hedera transaction: ${result.hedera_record.hedera_transaction_id}</p>
+                                    <p>• Data hash: ${result.hedera_record.data_hash.substring(0, 16)}...</p>
+                                </div>
+                             </div>`;
+                        lucide.createIcons();
+                    } else {
+                        addGuardianLog(`❌ Workflow failed: ${result.error}`);
+                    }
+                })
+                .catch(error => {
+                    addGuardianLog('❌ Error running workflow: ' + error.message);
+                });
+        }
+
+        function addGuardianLog(message) {
+            const logContainer = document.getElementById('guardian-activity-log');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'text-xs text-gray-600 border-l-2 border-gray-300 pl-2';
+            logEntry.innerHTML = `<span class="text-gray-400">[${timestamp}]</span> ${message}`;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // Keep only last 20 log entries
+            while (logContainer.children.length > 20) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+        }
+
+        function updateGuardianDeviceSelect() {
+            const deviceSelect = document.getElementById('guardian-device-select');
+            const currentDevices = Object.keys(latest_readings);
+            
+            // Clear existing options except the first one
+            deviceSelect.innerHTML = '<option value="">Select device...</option>';
+            
+            // Add current devices
+            currentDevices.forEach(deviceId => {
+                const option = document.createElement('option');
+                option.value = deviceId;
+                option.textContent = deviceId;
+                deviceSelect.appendChild(option);
+            });
+        }
+
         function sendToGuardian() {
-            // Get the first device's data
+            // Legacy function - now redirects to complete workflow
             const deviceIds = Object.keys(latest_readings);
             if (deviceIds.length === 0) {
                 alert('No device data available');
@@ -600,29 +923,8 @@ dashboard_html = """<!DOCTYPE html>
             }
 
             const deviceId = deviceIds[0];
-            fetch(`/api/carbon-credits/${deviceId}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('guardianStatus').innerHTML = 
-                        `<div class="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
-                            <div class="flex items-center mb-2">
-                                <i data-lucide="check-circle" class="w-5 h-5 text-oasis-green mr-2"></i>
-                                <p class="text-oasis-green font-semibold">Guardian data prepared successfully!</p>
-                            </div>
-                            <pre class="bg-gray-800 text-green-400 p-4 rounded-lg text-xs overflow-x-auto font-mono">${JSON.stringify(data, null, 2)}</pre>
-                         </div>`;
-                    lucide.createIcons();
-                })
-                .catch(error => {
-                    document.getElementById('guardianStatus').innerHTML = 
-                        `<div class="bg-red-50 border border-red-200 rounded-lg p-4 mt-4">
-                            <div class="flex items-center">
-                                <i data-lucide="x-circle" class="w-5 h-5 text-red-500 mr-2"></i>
-                                <p class="text-red-600 font-semibold">Error: ${error.message}</p>
-                            </div>
-                         </div>`;
-                    lucide.createIcons();
-                });
+            document.getElementById('guardian-device-select').value = deviceId;
+            runCompleteWorkflow();
         }
 
         function viewGuardianData() {
@@ -638,6 +940,23 @@ dashboard_html = """<!DOCTYPE html>
 
         // Store latest readings globally
         let latest_readings = {};
+
+        // Initialize Guardian Tools on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial Guardian status refresh
+            setTimeout(() => {
+                refreshGuardianStatus();
+                addGuardianLog('🛡️ Guardian Tools Dashboard initialized');
+            }, 2000);
+            
+            // Auto-refresh Guardian status every 30 seconds
+            setInterval(refreshGuardianStatus, 30000);
+            
+            // Initialize Lucide icons
+            lucide.createIcons();
+        });
+
+
 
         // Fetch initial data
         fetch('/api/latest-readings')
