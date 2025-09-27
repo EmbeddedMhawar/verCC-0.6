@@ -124,7 +124,7 @@ dashboard_html = """<!DOCTYPE html>
                          onerror="this.onerror=null; this.src='/static/verifiedcc-logo.png';"/>
                     <div>
                         <h1 class="text-2xl font-bold text-deep-ocean">VerifiedCC Dashboard</h1>
-                        <p class="text-sm text-gray-600">ESP32 Monitoring + Guardian Tools Architecture</p>
+                        <p class="text-sm text-gray-600">ESP32 Real-time Monitoring Dashboard</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -151,140 +151,143 @@ dashboard_html = """<!DOCTYPE html>
 
 
 
-            <!-- Devices Container -->
-            <div id="devicesContainer" class="space-y-4 mb-6"></div>
-
-            <!-- AMS-I.D Integration Section -->
+            <!-- Test Control Panel -->
             <div class="card-3d rounded-2xl p-8 border border-gray-200 mb-8 animate-fade-in">
                 <div class="flex items-center mb-6">
-                    <div class="bg-gradient-to-r from-oasis-green to-desert-sand text-white rounded-full h-12 w-12 flex items-center justify-center mr-4">
-                        <i data-lucide="leaf" class="w-6 h-6"></i>
+                    <div class="bg-gradient-to-r from-deep-ocean to-oasis-green text-white rounded-full h-12 w-12 flex items-center justify-center mr-4">
+                        <i data-lucide="flask-conical" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <h3 class="text-2xl font-bold text-deep-ocean">AMS-I.D Carbon Credit System</h3>
-                        <p class="text-gray-600">Automatic aggregation and Guardian submission</p>
+                        <h3 class="text-2xl font-bold text-deep-ocean">System Testing Controls</h3>
+                        <p class="text-gray-600">Mock data generation and real-time testing</p>
                     </div>
                 </div>
 
-                <!-- AMS-I.D Status Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                    <!-- Status -->
-                    <div class="rounded-xl p-6 border border-gray-200 bg-gradient-to-br from-cloud-white to-gray-50 shadow-lg">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-oasis-green text-cloud-white rounded-full h-10 w-10 flex items-center justify-center mr-3">
-                                <i data-lucide="activity" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-deep-ocean">System Status</h4>
-                                <p class="text-sm text-gray-600">AMS-I.D Integration</p>
-                            </div>
-                        </div>
-                        <div class="space-y-3">
-                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-600 text-sm font-medium">Status</span>
-                                    <span class="text-sm font-semibold" id="ams-status">
-                                        <span class="inline-block w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
-                                        Initializing...
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-600 text-sm font-medium">Guardian</span>
-                                    <span class="text-sm font-semibold" id="ams-guardian-status">
-                                        <span class="inline-block w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
-                                        Connecting...
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Measurements -->
+                <!-- Control Buttons Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <!-- Send Mock Data -->
                     <div class="rounded-xl p-6 border border-gray-200 bg-gradient-to-br from-cloud-white to-gray-50 shadow-lg">
                         <div class="flex items-center mb-4">
                             <div class="bg-desert-sand text-deep-ocean rounded-full h-10 w-10 flex items-center justify-center mr-3">
-                                <i data-lucide="database" class="w-5 h-5"></i>
+                                <i data-lucide="zap" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-deep-ocean">Data Processing</h4>
-                                <p class="text-sm text-gray-600">Measurements & Buffer</p>
+                                <h4 class="font-bold text-deep-ocean">Single Test</h4>
+                                <p class="text-sm text-gray-600">Send one data point</p>
                             </div>
                         </div>
-                        <div class="space-y-3">
-                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-600 text-sm font-medium">Processed</span>
-                                    <span class="text-lg font-bold text-deep-ocean" id="ams-measurements">0</span>
-                                </div>
-                            </div>
-                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-600 text-sm font-medium">Buffer</span>
-                                    <span class="text-lg font-bold text-deep-ocean" id="ams-buffer">0</span>
-                                </div>
-                            </div>
-                        </div>
+                        <button id="sendMockBtn" class="w-full bg-gradient-to-r from-desert-sand to-yellow-500 hover:from-yellow-500 hover:to-desert-sand text-deep-ocean font-semibold px-4 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center">
+                            <i data-lucide="send" class="w-4 h-4 mr-2"></i>
+                            Send Mock Data
+                        </button>
                     </div>
 
-                    <!-- Submissions -->
+                    <!-- Stream Controls -->
                     <div class="rounded-xl p-6 border border-gray-200 bg-gradient-to-br from-cloud-white to-gray-50 shadow-lg">
                         <div class="flex items-center mb-4">
-                            <div class="bg-deep-ocean text-cloud-white rounded-full h-10 w-10 flex items-center justify-center mr-3">
-                                <i data-lucide="send" class="w-5 h-5"></i>
+                            <div class="bg-oasis-green text-cloud-white rounded-full h-10 w-10 flex items-center justify-center mr-3">
+                                <i data-lucide="radio" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-deep-ocean">Guardian Submissions</h4>
-                                <p class="text-sm text-gray-600">Projects & Reports</p>
+                                <h4 class="font-bold text-deep-ocean">Live Stream</h4>
+                                <p class="text-sm text-gray-600">Continuous data flow</p>
                             </div>
                         </div>
                         <div class="space-y-3">
-                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-600 text-sm font-medium">Projects</span>
-                                    <span class="text-lg font-bold text-deep-ocean" id="ams-projects">0</span>
-                                </div>
-                            </div>
-                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-600 text-sm font-medium">Reports</span>
-                                    <span class="text-lg font-bold text-deep-ocean" id="ams-reports">0</span>
-                                </div>
-                            </div>
+                            <button id="startStreamBtn" class="w-full bg-gradient-to-r from-oasis-green to-green-600 hover:from-green-600 hover:to-oasis-green text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center">
+                                <i data-lucide="play" class="w-4 h-4 mr-2"></i>
+                                Start Stream
+                            </button>
+                            <button id="stopStreamBtn" class="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-500 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center">
+                                <i data-lucide="stop-circle" class="w-4 h-4 mr-2"></i>
+                                Stop Stream
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Carbon Credits -->
-                    <div class="rounded-xl p-6 border border-gray-200 bg-gradient-to-br from-oasis-green to-desert-sand shadow-lg text-white">
+                    <!-- Status Display -->
+                    <div class="rounded-xl p-6 border border-gray-200 bg-gradient-to-br from-deep-ocean to-blue-900 shadow-lg text-white">
                         <div class="flex items-center mb-4">
                             <div class="bg-white/20 rounded-full h-10 w-10 flex items-center justify-center mr-3">
-                                <i data-lucide="leaf" class="w-5 h-5"></i>
+                                <i data-lucide="activity" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold">Carbon Credits</h4>
-                                <p class="text-sm opacity-90">AMS-I.D Generated</p>
+                                <h4 class="font-bold">System Status</h4>
+                                <p class="text-sm opacity-90">Real-time monitoring</p>
                             </div>
                         </div>
                         <div class="space-y-3">
                             <div class="bg-white/10 rounded-lg p-3 border border-white/20">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-sm font-medium opacity-90">Total</span>
-                                    <span class="text-lg font-bold" id="ams-carbon-credits">0.000</span>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium opacity-90">Mock Stream</span>
+                                    <div class="flex items-center">
+                                        <div id="streamStatusDot" class="w-2 h-2 rounded-full bg-gray-400 mr-2"></div>
+                                        <span id="streamStatus" class="text-sm font-bold">Stopped</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="bg-white/10 rounded-lg p-3 border border-white/20">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-sm font-medium opacity-90">Energy</span>
-                                    <span class="text-lg font-bold" id="ams-energy">0.000 MWh</span>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium opacity-90">ESP32 Devices</span>
+                                    <div class="flex items-center">
+                                        <div id="realDevicesDot" class="w-2 h-2 rounded-full bg-gray-400 mr-2"></div>
+                                        <span id="realDevicesCount" class="text-sm font-bold">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white/10 rounded-lg p-3 border border-white/20">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium opacity-90">Last Data</span>
+                                    <span id="lastDataTime" class="text-xs font-medium opacity-75">Never</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-
+                <!-- Information Panel -->
+                <div class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-6 border border-gray-200">
+                    <div class="flex items-start">
+                        <div class="bg-blue-100 text-blue-600 rounded-full h-8 w-8 flex items-center justify-center mr-3 mt-1">
+                            <i data-lucide="info" class="w-4 h-4"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h5 class="font-semibold text-deep-ocean mb-2">Testing Instructions</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                                <div>
+                                    <p class="font-medium text-desert-sand mb-1">🧪 Single Test:</p>
+                                    <p>Sends one realistic data point to test dashboard functionality and data flow.</p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-oasis-green mb-1">📡 Live Stream:</p>
+                                    <p>Generates continuous mock data every 1 second with realistic solar patterns.</p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-deep-ocean mb-1">🌞 Solar Simulation:</p>
+                                    <p>Mock data follows daily solar cycles (6 AM - 6 PM peak generation).</p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-purple-600 mb-1">🔄 Real-time Updates:</p>
+                                    <p>All test data appears instantly in charts, device cards, and database.</p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-blue-600 mb-1">🔌 Real ESP32 Data:</p>
+                                    <p>Send POST requests to <code class="bg-white px-1 rounded text-xs">/api/energy-data</code> from your ESP32.</p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-green-600 mb-1">📡 Endpoint Ready:</p>
+                                    <p>Your ESP32 can send data to <code class="bg-white px-1 rounded text-xs">http://YOUR_IP:5000/api/energy-data</code></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Devices Container -->
+            <div id="devicesContainer" class="space-y-4 mb-6"></div>
+
+
 
 
 
@@ -541,10 +544,10 @@ dashboard_html = """<!DOCTYPE html>
                 deviceCard = createDeviceCard(reading.device_id);
                 devicesContainer.appendChild(deviceCard);
                 
-                // Update Guardian device selector when new device appears
-                updateGuardianDeviceSelect();
-                updateAMSDeviceSelect();
-                addGuardianLog(`📱 New device detected: ${reading.device_id}`);
+                // New device detected - show notification for real ESP32 devices
+                if (!reading.device_id.includes('MOCK')) {
+                    showNotification(`New ESP32 device connected: ${reading.device_id}`, 'success');
+                }
             }
 
             // Update metrics
@@ -556,8 +559,11 @@ dashboard_html = """<!DOCTYPE html>
             // Update timestamp
             lastUpdateElement.textContent = new Date(reading.timestamp).toLocaleString();
             
-            // Store reading globally for Guardian functions
+            // Store reading globally
             latest_readings[reading.device_id] = reading;
+            
+            // Update real device status
+            updateRealDeviceStatus();
         }
 
 
@@ -707,356 +713,219 @@ dashboard_html = """<!DOCTYPE html>
             totalCreditsElement.textContent = carbon_credits.toFixed(6);
         }
 
-        // Guardian Tools Functions
-        function refreshGuardianStatus() {
-            addGuardianLog('Refreshing Guardian Tools status...');
-            
-            fetch('/api/guardian/status')
-                .then(response => response.json())
-                .then(status => {
-                    updateGuardianToolsStatus(status);
-                    addGuardianLog('✅ Status refreshed successfully');
-                })
-                .catch(error => {
-                    addGuardianLog('❌ Error refreshing status: ' + error.message);
-                });
-        }
-
-        function updateGuardianToolsStatus(status) {
-            // Tool 10 - Data Source
-            document.getElementById('tool10-data-points').textContent = status.tool_10_data_source.raw_data_points;
-            document.getElementById('tool10-devices').textContent = status.tool_10_data_source.devices_active;
-            
-            // Tool 07 - Aggregation
-            document.getElementById('tool07-reports').textContent = status.tool_07_aggregation.aggregated_reports;
-            document.getElementById('tool07-energy').textContent = status.tool_07_aggregation.total_energy_processed.toFixed(3) + ' kWh';
-            document.getElementById('tool07-emissions').textContent = status.tool_07_aggregation.total_emission_reductions.toFixed(6) + ' tCO2';
-            
-            // Tool 03 - Hedera
-            document.getElementById('tool03-records').textContent = status.tool_03_hedera.hedera_records;
-            document.getElementById('tool03-verified').textContent = status.tool_03_hedera.verified_records;
-            document.getElementById('tool03-reductions').textContent = status.tool_03_hedera.total_verified_reductions.toFixed(6) + ' tCO2';
-        }
-
-        // AMS-I.D Functions
-        async function initializeAMSID() {
-            addAMSActivity('🔧 Initializing AMS-I.D system...');
-            
-            try {
-                const response = await fetch('/api/ams-id/initialize', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    addAMSActivity('✅ AMS-I.D system initialized successfully');
-                    refreshAMSStatus();
-                } else {
-                    addAMSActivity(`❌ Initialization failed: ${result.message}`);
-                }
-            } catch (error) {
-                addAMSActivity(`❌ Error: ${error.message}`);
-            }
-        }
-
-        async function triggerAMSAggregation() {
-            const deviceSelect = document.getElementById('ams-device-select');
-            const selectedDevice = deviceSelect.value || 'all';
-            
-            addAMSActivity(`🔄 Triggering AMS-I.D aggregation for ${selectedDevice}...`);
-            
-            try {
-                const endpoint = selectedDevice === 'all' ? 
-                    '/api/ams-id/aggregate/ESP32_001?hours=24' : 
-                    `/api/ams-id/aggregate/${selectedDevice}?hours=24`;
-                
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    const report = result.report;
-                    addAMSActivity(`✅ Aggregation successful: ${report.total_energy_mwh.toFixed(3)} MWh, ${report.emission_reductions_tco2.toFixed(6)} tCO2e`);
-                    refreshAMSStatus();
-                } else {
-                    addAMSActivity(`❌ Aggregation failed: ${result.message}`);
-                }
-            } catch (error) {
-                addAMSActivity(`❌ Error: ${error.message}`);
-            }
-        }
-
-        async function runAMSWorkflow() {
-            const deviceSelect = document.getElementById('ams-device-select');
-            const selectedDevice = deviceSelect.value;
-            
-            addAMSActivity(`🚀 Starting complete AMS-I.D workflow...`);
-            
-            try {
-                const endpoint = selectedDevice ? 
-                    `/api/ams-id/workflow/${selectedDevice}` : 
-                    '/api/ams-id/workflow/all';
-                
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    addAMSActivity('✅ Complete AMS-I.D workflow successful!');
-                    addAMSActivity('📤 Data submitted to Guardian via AMS-I.D policy');
-                    refreshAMSStatus();
-                    updateTotalCredits(); // Update main carbon credits display
-                } else {
-                    addAMSActivity(`❌ Workflow failed: ${result.message}`);
-                }
-            } catch (error) {
-                addAMSActivity(`❌ Error: ${error.message}`);
-            }
-        }
-
-        async function refreshAMSStatus() {
-            try {
-                const response = await fetch('/api/ams-id/metrics');
-                const metrics = await response.json();
-                
-                // Update status indicators
-                const statusElement = document.getElementById('ams-status');
-                const guardianStatusElement = document.getElementById('ams-guardian-status');
-                
-                if (metrics.ams_id_status === 'online') {
-                    statusElement.innerHTML = '<span class="inline-block w-2 h-2 bg-oasis-green rounded-full mr-2 animate-pulse"></span><span class="text-oasis-green">Online</span>';
-                } else {
-                    statusElement.innerHTML = '<span class="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span><span class="text-red-500">Offline</span>';
-                }
-                
-                if (metrics.guardian_status === 'authenticated') {
-                    guardianStatusElement.innerHTML = '<span class="inline-block w-2 h-2 bg-oasis-green rounded-full mr-2 animate-pulse"></span><span class="text-oasis-green">Connected</span>';
-                } else {
-                    guardianStatusElement.innerHTML = '<span class="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span><span class="text-red-500">Disconnected</span>';
-                }
-                
-                // Update metrics
-                document.getElementById('ams-measurements').textContent = metrics.measurements_processed;
-                document.getElementById('ams-buffer').textContent = metrics.buffer_count;
-                document.getElementById('ams-projects').textContent = metrics.projects_submitted;
-                document.getElementById('ams-reports').textContent = metrics.reports_submitted;
-                document.getElementById('ams-carbon-credits').textContent = metrics.total_carbon_credits.toFixed(6);
-                document.getElementById('ams-energy').textContent = `${metrics.total_energy_mwh.toFixed(3)} MWh`;
-                
-                // Update main carbon credits display
-                const mainCreditsElement = document.getElementById('totalCredits');
-                if (mainCreditsElement) {
-                    const currentCredits = parseFloat(mainCreditsElement.textContent) || 0;
-                    const newTotal = currentCredits + metrics.total_carbon_credits;
-                    mainCreditsElement.textContent = newTotal.toFixed(6);
-                }
-                
-            } catch (error) {
-                console.error('Error refreshing AMS status:', error);
-            }
-        }
-
-        function addAMSActivity(message) {
-            const logContainer = document.getElementById('ams-activity-log');
-            const timestamp = new Date().toLocaleTimeString();
-            
-            const logEntry = document.createElement('div');
-            logEntry.className = 'flex items-start text-sm';
-            logEntry.innerHTML = `
-                <span class="text-gray-400 text-xs mr-2 mt-0.5 font-mono">${timestamp}</span>
-                <span class="flex-1">${message}</span>
-            `;
-            
-            logContainer.appendChild(logEntry);
-            
-            // Keep only last 10 entries
-            while (logContainer.children.length > 10) {
-                logContainer.removeChild(logContainer.firstChild);
-            }
-            
-            // Scroll to bottom
-            logContainer.scrollTop = logContainer.scrollHeight;
-        }
-
-        // Guardian Tools Functions
-        function triggerAggregation() {
-            const deviceSelect = document.getElementById('guardian-device-select');
-            const selectedDevice = deviceSelect.value;
-            
-            if (!selectedDevice) {
-                alert('Please select a device first');
-                return;
-            }
-            
-            addGuardianLog(`🔄 Triggering aggregation for ${selectedDevice}...`);
-            
-            fetch(`/api/guardian/aggregate/${selectedDevice}`, {
-                method: 'POST'
-            })
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        addGuardianLog(`✅ Aggregation completed for ${selectedDevice}`);
-                        addGuardianLog(`📊 Energy: ${result.data.total_energy_kwh.toFixed(3)} kWh, Emissions: ${result.data.emission_reductions_tco2.toFixed(6)} tCO2`);
-                        refreshGuardianStatus();
-                    } else {
-                        addGuardianLog(`❌ Aggregation failed: ${result.message}`);
-                    }
-                })
-                .catch(error => {
-                    addGuardianLog('❌ Error triggering aggregation: ' + error.message);
-                });
-        }
-
-        function runCompleteWorkflow() {
-            const deviceSelect = document.getElementById('guardian-device-select');
-            const selectedDevice = deviceSelect.value;
-            
-            if (!selectedDevice) {
-                alert('Please select a device first');
-                return;
-            }
-            
-            addGuardianLog(`🚀 Starting complete workflow for ${selectedDevice}...`);
-            
-            fetch(`/api/guardian/workflow/${selectedDevice}`, {
-                method: 'POST'
-            })
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        addGuardianLog(`✅ Complete workflow finished for ${selectedDevice}`);
-                        addGuardianLog(`📊 Emission reductions: ${result.aggregated_data.emission_reductions_tco2.toFixed(6)} tCO2`);
-                        addGuardianLog(`🔗 Hedera TX: ${result.hedera_record.hedera_transaction_id}`);
-                        addGuardianLog(`🛡️ Guardian submitted: ${result.guardian_submitted ? 'Yes' : 'No'}`);
-                        refreshGuardianStatus();
-                        
-                        // Show success notification
-                        document.getElementById('guardianStatus').innerHTML = 
-                            `<div class="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
-                                <div class="flex items-center mb-2">
-                                    <i data-lucide="check-circle" class="w-5 h-5 text-oasis-green mr-2"></i>
-                                    <p class="text-oasis-green font-semibold">Guardian workflow completed successfully!</p>
-                                </div>
-                                <div class="text-sm text-green-700">
-                                    <p>• Emission reductions: ${result.aggregated_data.emission_reductions_tco2.toFixed(6)} tCO2</p>
-                                    <p>• Hedera transaction: ${result.hedera_record.hedera_transaction_id}</p>
-                                    <p>• Data hash: ${result.hedera_record.data_hash.substring(0, 16)}...</p>
-                                </div>
-                             </div>`;
-                        lucide.createIcons();
-                    } else {
-                        addGuardianLog(`❌ Workflow failed: ${result.error}`);
-                    }
-                })
-                .catch(error => {
-                    addGuardianLog('❌ Error running workflow: ' + error.message);
-                });
-        }
-
-        function addGuardianLog(message) {
-            const logContainer = document.getElementById('guardian-activity-log');
-            const timestamp = new Date().toLocaleTimeString();
-            
-            const logEntry = document.createElement('div');
-            logEntry.className = 'text-xs text-gray-600 border-l-2 border-gray-300 pl-2';
-            logEntry.innerHTML = `<span class="text-gray-400">[${timestamp}]</span> ${message}`;
-            
-            logContainer.appendChild(logEntry);
-            logContainer.scrollTop = logContainer.scrollHeight;
-            
-            // Keep only last 20 log entries
-            while (logContainer.children.length > 20) {
-                logContainer.removeChild(logContainer.firstChild);
-            }
-        }
-
-        function updateGuardianDeviceSelect() {
-            const deviceSelect = document.getElementById('guardian-device-select');
-            const currentDevices = Object.keys(latest_readings);
-            
-            // Clear existing options except the first one
-            deviceSelect.innerHTML = '<option value="">Select device...</option>';
-            
-            // Add current devices
-            currentDevices.forEach(deviceId => {
-                const option = document.createElement('option');
-                option.value = deviceId;
-                option.textContent = deviceId;
-                deviceSelect.appendChild(option);
-            });
-        }
-
-        function updateAMSDeviceSelect() {
-            const deviceSelect = document.getElementById('ams-device-select');
-            const currentDevices = Object.keys(latest_readings);
-            
-            // Clear existing options except the first one
-            deviceSelect.innerHTML = '<option value="">All devices</option>';
-            
-            // Add current devices
-            currentDevices.forEach(deviceId => {
-                const option = document.createElement('option');
-                option.value = deviceId;
-                option.textContent = deviceId;
-                deviceSelect.appendChild(option);
-            });
-        }
-
-        function sendToGuardian() {
-            // Legacy function - now redirects to complete workflow
-            const deviceIds = Object.keys(latest_readings);
-            if (deviceIds.length === 0) {
-                alert('No device data available');
-                return;
-            }
-
-            const deviceId = deviceIds[0];
-            document.getElementById('guardian-device-select').value = deviceId;
-            runCompleteWorkflow();
-        }
-
-        function viewGuardianData() {
-            const deviceIds = Object.keys(latest_readings);
-            if (deviceIds.length === 0) {
-                alert('No device data available');
-                return;
-            }
-
-            const deviceId = deviceIds[0];
-            window.open(`/api/carbon-credits/${deviceId}`, '_blank');
-        }
-
         // Store latest readings globally
         let latest_readings = {};
 
-        // Initialize Guardian Tools on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initial Guardian status refresh
+        // Test control functions
+        async function sendMockData() {
+            try {
+                const response = await fetch('/api/test/send-mock-data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showNotification('Test data sent successfully! Check your dashboard for updates.', 'success');
+                } else {
+                    showNotification('Failed to send test data. Please try again.', 'error');
+                }
+            } catch (error) {
+                showNotification('Connection error: ' + error.message, 'error');
+            }
+        }
+
+        async function startMockStream() {
+            try {
+                const response = await fetch('/api/test/start-mock-stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showNotification('Live data stream started! Generating realistic solar data every 1 second.', 'success');
+                    updateStreamStatus(true);
+                } else if (result.status === 'already_running') {
+                    showNotification('Data stream is already active and running.', 'warning');
+                    updateStreamStatus(true);
+                } else {
+                    showNotification('Failed to start data stream. Please try again.', 'error');
+                }
+            } catch (error) {
+                showNotification('Connection error: ' + error.message, 'error');
+            }
+        }
+
+        async function stopMockStream() {
+            try {
+                const response = await fetch('/api/test/stop-mock-stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showNotification('Data stream stopped successfully.', 'info');
+                    updateStreamStatus(false);
+                } else if (result.status === 'not_running') {
+                    showNotification('Data stream was not active.', 'warning');
+                    updateStreamStatus(false);
+                } else {
+                    showNotification('Failed to stop data stream. Please try again.', 'error');
+                }
+            } catch (error) {
+                showNotification('Connection error: ' + error.message, 'error');
+            }
+        }
+
+        async function checkMockStatus() {
+            try {
+                const response = await fetch('/api/test/mock-status');
+                const result = await response.json();
+                updateStreamStatus(result.mock_active);
+            } catch (error) {
+                console.error('Error checking mock status:', error);
+            }
+        }
+
+        function updateRealDeviceStatus() {
+            const realDevices = Object.keys(latest_readings).filter(deviceId => !deviceId.includes('MOCK'));
+            const realDevicesCount = document.getElementById('realDevicesCount');
+            const realDevicesDot = document.getElementById('realDevicesDot');
+            const lastDataTime = document.getElementById('lastDataTime');
+            
+            // Update device count
+            realDevicesCount.textContent = realDevices.length;
+            
+            // Update status dot
+            if (realDevices.length > 0) {
+                realDevicesDot.className = 'w-2 h-2 rounded-full bg-green-400 mr-2 animate-pulse';
+                
+                // Find most recent real device data
+                let mostRecentTime = null;
+                realDevices.forEach(deviceId => {
+                    const reading = latest_readings[deviceId];
+                    const readingTime = new Date(reading.timestamp);
+                    if (!mostRecentTime || readingTime > mostRecentTime) {
+                        mostRecentTime = readingTime;
+                    }
+                });
+                
+                if (mostRecentTime) {
+                    lastDataTime.textContent = mostRecentTime.toLocaleTimeString();
+                }
+            } else {
+                realDevicesDot.className = 'w-2 h-2 rounded-full bg-gray-400 mr-2';
+                lastDataTime.textContent = 'Never';
+            }
+        }
+
+        function updateStreamStatus(isActive) {
+            const statusElement = document.getElementById('streamStatus');
+            const statusDot = document.getElementById('streamStatusDot');
+            const startBtn = document.getElementById('startStreamBtn');
+            const stopBtn = document.getElementById('stopStreamBtn');
+            
+            if (isActive) {
+                statusElement.textContent = 'Active';
+                statusElement.className = 'text-sm font-bold text-green-300';
+                statusDot.className = 'w-2 h-2 rounded-full bg-green-400 mr-2 animate-pulse';
+                
+                startBtn.disabled = true;
+                startBtn.className = 'w-full bg-gray-400 text-gray-600 font-semibold px-4 py-2 rounded-lg cursor-not-allowed flex items-center justify-center opacity-50';
+                
+                stopBtn.disabled = false;
+                stopBtn.className = 'w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-500 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center';
+            } else {
+                statusElement.textContent = 'Stopped';
+                statusElement.className = 'text-sm font-bold text-gray-300';
+                statusDot.className = 'w-2 h-2 rounded-full bg-gray-400 mr-2';
+                
+                startBtn.disabled = false;
+                startBtn.className = 'w-full bg-gradient-to-r from-oasis-green to-green-600 hover:from-green-600 hover:to-oasis-green text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center';
+                
+                stopBtn.disabled = true;
+                stopBtn.className = 'w-full bg-gray-400 text-gray-600 font-semibold px-4 py-2 rounded-lg cursor-not-allowed flex items-center justify-center opacity-50';
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-6 z-50 p-4 rounded-2xl shadow-2xl max-w-sm transition-all duration-500 transform translate-x-full`;
+            
+            // Set colors and styles based on type using dashboard color scheme
+            const styles = {
+                success: 'bg-gradient-to-r from-oasis-green to-green-600 text-white border border-green-300',
+                error: 'bg-gradient-to-r from-red-500 to-red-600 text-white border border-red-300',
+                warning: 'bg-gradient-to-r from-desert-sand to-yellow-500 text-deep-ocean border border-yellow-300',
+                info: 'bg-gradient-to-r from-deep-ocean to-blue-600 text-white border border-blue-300'
+            };
+            
+            const icons = {
+                success: 'check-circle',
+                error: 'alert-circle',
+                warning: 'alert-triangle',
+                info: 'info'
+            };
+            
+            notification.className += ` ${styles[type] || styles.info}`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <div class="bg-white/20 rounded-full h-8 w-8 flex items-center justify-center mr-3">
+                        <i data-lucide="${icons[type] || icons.info}" class="w-4 h-4"></i>
+                    </div>
+                    <span class="flex-1 font-medium">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-3 bg-white/20 hover:bg-white/30 rounded-full h-6 w-6 flex items-center justify-center transition-colors">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Initialize icons for the notification
+            lucide.createIcons();
+            
+            // Animate in with bounce effect
             setTimeout(() => {
-                refreshGuardianStatus();
-                addGuardianLog('🛡️ Guardian Tools Dashboard initialized');
-            }, 2000);
+                notification.classList.remove('translate-x-full');
+                notification.classList.add('animate-bounce');
+                setTimeout(() => {
+                    notification.classList.remove('animate-bounce');
+                }, 600);
+            }, 100);
             
-            // Auto-refresh Guardian status every 30 seconds
-            setInterval(refreshGuardianStatus, 30000);
-            
-            // Auto-refresh AMS-I.D status every 30 seconds
-            setInterval(refreshAMSStatus, 30000);
-            
-            // Initialize AMS-I.D status on page load
-            setTimeout(refreshAMSStatus, 2000);
-            
+            // Auto remove after 4 seconds
+            setTimeout(() => {
+                notification.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 500);
+            }, 4000);
+        }
+
+        // Initialize dashboard on page load
+        document.addEventListener('DOMContentLoaded', function() {
             // Initialize Lucide icons
             lucide.createIcons();
+            
+            // Set up test button event listeners
+            document.getElementById('sendMockBtn').addEventListener('click', sendMockData);
+            document.getElementById('startStreamBtn').addEventListener('click', startMockStream);
+            document.getElementById('stopStreamBtn').addEventListener('click', stopMockStream);
+            
+            // Check initial mock status
+            checkMockStatus();
+            
+            // Check mock status every 10 seconds
+            setInterval(checkMockStatus, 10000);
         });
 
 

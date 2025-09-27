@@ -20,9 +20,9 @@
 #define ADC_COUNTS  (1<<ADC_BITS)
 
 // Network credentials (keep your existing ones)
-const char* ssid = "La_Fibre_dOrange_2.4G_64E8";
-const char* password = "U2G337EA7EHEKKTPH7";
-const char* serverName = "http://192.168.11.101:5000/api/energy-data";  // Updated to your PC's IP
+const char* ssid = "EDGE_SCHOOL_GUEST";
+const char* password = "EDGEGUEST2019";
+const char* serverName = "http://192.168.100.200:5000/api/energy-data";  // Updated to your PC's IP
 // Previous IP was: http://192.168.1.100:5000/api/energy-data (incorrect)
 // Your actual PC IP: 192.168.11.101
 

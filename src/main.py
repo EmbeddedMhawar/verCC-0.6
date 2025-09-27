@@ -11,8 +11,6 @@ import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from dashboard_content import dashboard_html
-from guardian_integration import guardian_processor
-from ams_dashboard_integration import ams_integration
 
 # Load environment variables
 load_dotenv()
@@ -28,8 +26,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Debug middleware to log all requests
+@app.middleware("http")
+async def log_requests(request, call_next):
+    start_time = datetime.now()
+    
+    # Log incoming request
+    print(f"🌐 [{start_time.strftime('%H:%M:%S')}] {request.method} {request.url}")
+    print(f"🌐 [{start_time.strftime('%H:%M:%S')}] Headers: {dict(request.headers)}")
+    print(f"🌐 [{start_time.strftime('%H:%M:%S')}] Client: {request.client}")
+    
+    # Process request
+    response = await call_next(request)
+    
+    # Log response
+    process_time = (datetime.now() - start_time).total_seconds()
+    print(f"🌐 [{start_time.strftime('%H:%M:%S')}] Response: {response.status_code} (took {process_time:.3f}s)")
+    
+    return response
+
 # Mount static files directory
-app.mount("/static", StaticFiles(directory="assets"), name="static")
+assets_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets")
+app.mount("/static", StaticFiles(directory=assets_path), name="static")
 
 # Supabase configuration
 SUPABASE_URL = os.getenv("SUPABASE_URL", "your_supabase_url")
@@ -75,17 +93,68 @@ async def get_dashboard():
     """Serve the real-time dashboard"""
     return HTMLResponse(content=dashboard_html, status_code=200)
 
+@app.get("/debug", response_class=HTMLResponse)
+async def get_debug_dashboard():
+    """Serve the debug dashboard"""
+    with open("debug_dashboard.html", "r") as f:
+        debug_html = f.read()
+    return HTMLResponse(content=debug_html, status_code=200)
+
+@app.get("/api/test-connection")
+async def test_connection():
+    """Simple endpoint to test if ESP32 can reach the server"""
+    current_time = datetime.now().strftime("%H:%M:%S")
+    print(f"🧪 [{current_time}] TEST CONNECTION endpoint hit!")
+    return {
+        "status": "success",
+        "message": "Server is reachable",
+        "timestamp": datetime.now().isoformat(),
+        "server_ip": "192.168.100.200",
+        "port": 5000
+    }
+
+@app.post("/api/test-post")
+async def test_post(data: Dict[str, Any]):
+    """Simple POST endpoint to test if ESP32 can send data"""
+    current_time = datetime.now().strftime("%H:%M:%S")
+    print(f"🧪 [{current_time}] TEST POST endpoint hit!")
+    print(f"🧪 [{current_time}] Received data: {data}")
+    return {
+        "status": "success",
+        "message": "POST request received successfully",
+        "received_data": data,
+        "timestamp": datetime.now().isoformat()
+    }
+
 
 
 @app.post("/api/energy-data")
 async def receive_energy_data(reading: Dict[str, Any]):
     """Receive energy data from ESP32 and process through Guardian Tools"""
+    current_time = datetime.now().strftime("%H:%M:%S")
+    
+    # Debug: Log all incoming requests
+    print(f"🔍 [{current_time}] ESP32 DATA ENDPOINT HIT!")
+    print(f"🔍 [{current_time}] Raw data received: {reading}")
+    print(f"🔍 [{current_time}] Data type: {type(reading)}")
+    print(f"🔍 [{current_time}] Data keys: {list(reading.keys()) if isinstance(reading, dict) else 'Not a dict'}")
+    
     try:
         # Validate required fields
         required_fields = ["device_id", "current", "voltage", "power"]
+        missing_fields = []
+        
         for field in required_fields:
             if field not in reading:
-                raise HTTPException(status_code=400, detail=f"Missing required field: {field}")
+                missing_fields.append(field)
+        
+        if missing_fields:
+            error_msg = f"Missing required fields: {missing_fields}"
+            print(f"❌ [{current_time}] VALIDATION ERROR: {error_msg}")
+            print(f"❌ [{current_time}] Available fields: {list(reading.keys())}")
+            raise HTTPException(status_code=400, detail=error_msg)
+        
+        print(f"✅ [{current_time}] Validation passed for device: {reading['device_id']}")
         
         # Fix timestamp - use server time instead of ESP32's fake timestamp
         server_time = datetime.now()
@@ -97,23 +166,11 @@ async def receive_energy_data(reading: Dict[str, Any]):
         readings_history.append(reading)
         device_last_seen[reading["device_id"]] = server_time
         
+        print(f"💾 [{current_time}] Stored in memory: {reading['device_id']}")
+        
         # Keep only last 1000 readings in memory
         if len(readings_history) > 1000:
             readings_history.pop(0)
-        
-        # 🔥 NEW: Process through Guardian Tools Architecture
-        # Tool 10: Data Source Processing
-        try:
-            await guardian_processor.process_esp32_data(reading)
-            print(f"🔧 Tool 10: Processed {reading['device_id']} data through Guardian pipeline")
-        except Exception as e:
-            print(f"❌ Guardian Tool 10 error: {e}")
-        
-        # 🌱 NEW: Process through AMS-I.D Aggregation Pipeline
-        try:
-            await ams_integration.process_esp32_data(reading)
-        except Exception as e:
-            print(f"❌ AMS-I.D processing error: {e}")
         
         # Store in Supabase with corrected timestamp
         if supabase:
@@ -124,29 +181,40 @@ async def receive_energy_data(reading: Dict[str, Any]):
                 db_reading.pop("server_received_at", None)
                 
                 result = supabase.table("energy_readings").insert(db_reading).execute()
-                current_time = server_time.strftime("%H:%M:%S")
-                print(f"📊 [{current_time}] Stored in Supabase: {reading['device_id']} - {reading['power']}W")
+                print(f"💾 [{current_time}] Stored in Supabase: {reading['device_id']} - {reading['power']}W")
             except Exception as e:
-                print(f"❌ Supabase insert error: {e}")
+                print(f"❌ [{current_time}] Supabase insert error: {e}")
         
         # Broadcast to WebSocket clients
-        await manager.broadcast(json.dumps({
-            "type": "energy_reading",
-            "data": reading
-        }))
+        try:
+            await manager.broadcast(json.dumps({
+                "type": "energy_reading",
+                "data": reading
+            }))
+            print(f"📡 [{current_time}] Broadcasted to WebSocket clients")
+        except Exception as e:
+            print(f"❌ [{current_time}] WebSocket broadcast error: {e}")
         
-        current_time = server_time.strftime("%H:%M:%S")
-        print(f"📊 [{current_time}] Received data from {reading['device_id']}: {reading['power']}W")
+        print(f"✅ [{current_time}] SUCCESS: Received data from {reading['device_id']}: {reading['power']}W")
         
         return {
             "status": "success", 
-            "message": "Data received, stored, and processed through Guardian Tools", 
+            "message": "Data received and stored successfully", 
             "server_time": server_time.isoformat(),
-            "guardian_processed": True
+            "device_id": reading["device_id"],
+            "power": reading["power"]
         }
     
+    except HTTPException:
+        # Re-raise HTTP exceptions (like validation errors)
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        error_msg = f"Unexpected error processing ESP32 data: {str(e)}"
+        print(f"❌ [{current_time}] CRITICAL ERROR: {error_msg}")
+        print(f"❌ [{current_time}] Exception type: {type(e)}")
+        import traceback
+        print(f"❌ [{current_time}] Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=error_msg)
 
 @app.get("/health")
 async def health_check():
@@ -229,153 +297,164 @@ async def get_supabase_stats():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Supabase stats error: {str(e)}")
 
-@app.get("/api/carbon-credits/{device_id}")
-async def calculate_carbon_credits(device_id: str):
-    """Calculate carbon credits for a device (Legacy endpoint)"""
-    if device_id not in latest_readings:
-        raise HTTPException(status_code=404, detail="Device not found")
-    
-    reading = latest_readings[device_id]
-    
-    # Morocco grid emission factor (tCO2/MWh)
-    morocco_ef = 0.81
-    
-    # Convert kWh to MWh
-    total_energy_kwh = reading.get("total_energy_kwh", 0)
-    export_mwh = total_energy_kwh / 1000.0 * 0.98  # 98% export efficiency
-    
-    # Calculate emissions
-    baseline_emissions = export_mwh * morocco_ef
-    project_emissions = 0  # Solar has zero operational emissions
-    emission_reductions = baseline_emissions
-    
-    carbon_credit_data = {
-        "methodology": "GCCM001_v4",
-        "reporting_period": reading["timestamp"],
-        "project_info": {
-            "project_name": f"ESP32 Solar Monitor - {device_id}",
-            "project_id": f"VCC-{device_id}",
-            "location": "Morocco",
-            "capacity_mw": 0.001  # 1kW = 0.001MW
-        },
-        "monitoring_data": {
-            "gross_generation_mwh": total_energy_kwh / 1000.0,
-            "net_export_mwh": export_mwh,
-            "capacity_factor": (reading.get("ac_power_kw", 0) / 0.001) * 100 if reading.get("ac_power_kw", 0) > 0 else 0,
-            "average_irradiance": reading.get("irradiance_w_m2", 0),
-            "current_rms": reading.get("current", 0),
-            "system_efficiency": reading.get("efficiency", 0)
-        },
-        "calculations": {
-            "baseline_emissions_tco2": baseline_emissions,
-            "project_emissions_tco2": project_emissions,
-            "emission_reductions_tco2": emission_reductions,
-            "carbon_credits_generated": emission_reductions
-        }
-    }
-    
-    return carbon_credit_data
 
-@app.get("/api/guardian/status")
-async def get_guardian_status():
-    """Get Guardian Tools status summary"""
-    return guardian_processor.get_status_summary()
+# Mock data functionality
+import random
+import threading
+import time
 
-@app.post("/api/guardian/aggregate/{device_id}")
-async def trigger_aggregation(device_id: str, hours: int = 1):
-    """Tool 07: Trigger data aggregation for a device"""
-    try:
-        aggregated = guardian_processor.aggregate_data(device_id, hours)
-        if aggregated:
-            return {
-                "success": True,
-                "message": f"Aggregated {hours} hours of data for {device_id}",
-                "data": aggregated.__dict__
-            }
-        else:
-            return {
-                "success": False,
-                "message": f"No data found for {device_id} in last {hours} hours"
-            }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# Mock data control
+mock_data_active = False
+mock_data_thread = None
 
-@app.post("/api/guardian/workflow/{device_id}")
-async def trigger_complete_workflow(device_id: str):
-    """Trigger complete Guardian Tools workflow: Tool 10 → Tool 07 → Tool 03 → Guardian"""
-    try:
-        result = await guardian_processor.process_complete_workflow(device_id)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/api/guardian/hedera-records")
-async def get_hedera_records():
-    """Tool 03: Get all Hedera verification records"""
+def generate_mock_data():
+    """Generate realistic mock ESP32 data"""
+    current_hour = datetime.now().hour
+    
+    # Solar irradiance follows daily cycle (6 AM to 6 PM)
+    if 6 <= current_hour <= 18:
+        base_irradiance = 800 * (1 - abs(current_hour - 12) / 6)
+    else:
+        base_irradiance = 0
+    
+    irradiance = max(0, base_irradiance + random.uniform(-100, 100))
+    power = irradiance * 0.6 + random.uniform(-50, 50)  # 0.6W per W/m² with variation
+    power = max(0, power)  # Ensure non-negative power
+    
+    voltage = 220 + random.uniform(-10, 10)
+    current = power / voltage if voltage > 0 else 0
+    
     return {
-        "records": [record.__dict__ for record in guardian_processor.hedera_records],
-        "total_records": len(guardian_processor.hedera_records),
-        "verified_records": len([r for r in guardian_processor.hedera_records if r.verification_status == "verified"])
+        "device_id": "ESP32_MOCK_001",
+        "current": round(current, 2),
+        "voltage": round(voltage, 1),
+        "power": round(power, 1),
+        "total_energy_kwh": round(random.uniform(0.5, 5.0), 3),
+        "efficiency": round(0.85 + random.uniform(-0.05, 0.05), 3),
+        "ambient_temp_c": round(25 + random.uniform(-5, 10), 1),
+        "irradiance_w_m2": round(irradiance, 1),
+        "power_factor": round(0.95 + random.uniform(-0.05, 0.05), 3)
     }
 
-@app.get("/api/guardian/aggregated-data")
-async def get_aggregated_data():
-    """Tool 07: Get all aggregated data reports"""
-    return {
-        "reports": [data.__dict__ for data in guardian_processor.aggregated_data],
-        "total_reports": len(guardian_processor.aggregated_data),
-        "total_emission_reductions": sum(a.emission_reductions_tco2 for a in guardian_processor.aggregated_data)
-    }
+async def send_mock_data():
+    """Send mock data through the normal data processing pipeline"""
+    mock_reading = generate_mock_data()
+    
+    # Process through the same pipeline as real ESP32 data
+    server_time = datetime.now()
+    mock_reading["timestamp"] = server_time.isoformat()
+    mock_reading["server_received_at"] = server_time.isoformat()
+    
+    # Store in memory
+    latest_readings[mock_reading["device_id"]] = mock_reading
+    readings_history.append(mock_reading)
+    device_last_seen[mock_reading["device_id"]] = server_time
+    
+    # Keep only last 1000 readings in memory
+    if len(readings_history) > 1000:
+        readings_history.pop(0)
+    
+    # Store in Supabase
+    if supabase:
+        try:
+            db_reading = mock_reading.copy()
+            db_reading["timestamp"] = server_time.isoformat()
+            db_reading.pop("server_received_at", None)
+            
+            result = supabase.table("energy_readings").insert(db_reading).execute()
+            current_time = server_time.strftime("%H:%M:%S")
+            print(f"🧪 [{current_time}] Mock data stored: {mock_reading['device_id']} - {mock_reading['power']}W")
+        except Exception as e:
+            print(f"❌ Mock data Supabase error: {e}")
+    
+    # Broadcast to WebSocket clients
+    await manager.broadcast(json.dumps({
+        "type": "energy_reading",
+        "data": mock_reading
+    }))
+    
+    current_time = server_time.strftime("%H:%M:%S")
+    print(f"🧪 [{current_time}] Mock data sent: {mock_reading['device_id']} - {mock_reading['power']}W")
 
-# AMS-I.D Integration Endpoints
-@app.get("/api/ams-id/status")
-async def get_ams_id_status():
-    """Get AMS-I.D integration status"""
-    return ams_integration.get_status_summary()
+def mock_data_worker():
+    """Background worker for continuous mock data generation"""
+    global mock_data_active
+    
+    while mock_data_active:
+        try:
+            # Create event loop for async function
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(send_mock_data())
+            loop.close()
+            
+            # Wait 1 second before next mock data
+            time.sleep(1)
+        except Exception as e:
+            print(f"❌ Mock data worker error: {e}")
+            time.sleep(5)
 
-@app.get("/api/ams-id/metrics")
-async def get_ams_id_metrics():
-    """Get AMS-I.D metrics for dashboard"""
-    return ams_integration.get_dashboard_metrics()
-
-@app.post("/api/ams-id/initialize")
-async def initialize_ams_id():
-    """Initialize AMS-I.D integration"""
+@app.post("/api/test/send-mock-data")
+async def send_single_mock_data():
+    """Send a single mock data point"""
     try:
-        success = await ams_integration.initialize()
+        await send_mock_data()
         return {
-            "success": success,
-            "message": "AMS-I.D integration initialized successfully" if success else "Initialization failed"
+            "status": "success",
+            "message": "Mock data sent successfully",
+            "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/ams-id/aggregate/{device_id}")
-async def trigger_ams_aggregation(device_id: str, hours: int = 1):
-    """Trigger AMS-I.D aggregation for a device"""
-    try:
-        result = await ams_integration.trigger_aggregation(device_id, hours)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@app.post("/api/test/start-mock-stream")
+async def start_mock_stream():
+    """Start continuous mock data stream"""
+    global mock_data_active, mock_data_thread
+    
+    if mock_data_active:
+        return {
+            "status": "already_running",
+            "message": "Mock data stream is already active"
+        }
+    
+    mock_data_active = True
+    mock_data_thread = threading.Thread(target=mock_data_worker, daemon=True)
+    mock_data_thread.start()
+    
+    print("🧪 Mock data stream started")
+    return {
+        "status": "success",
+        "message": "Mock data stream started",
+        "timestamp": datetime.now().isoformat()
+    }
 
-@app.post("/api/ams-id/workflow/{device_id}")
-async def run_ams_complete_workflow(device_id: str):
-    """Run complete AMS-I.D workflow: Aggregate → Submit to Guardian"""
-    try:
-        result = await ams_integration.run_complete_workflow(device_id)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@app.post("/api/test/stop-mock-stream")
+async def stop_mock_stream():
+    """Stop continuous mock data stream"""
+    global mock_data_active
+    
+    if not mock_data_active:
+        return {
+            "status": "not_running",
+            "message": "Mock data stream is not active"
+        }
+    
+    mock_data_active = False
+    print("🧪 Mock data stream stopped")
+    return {
+        "status": "success",
+        "message": "Mock data stream stopped",
+        "timestamp": datetime.now().isoformat()
+    }
 
-@app.post("/api/ams-id/workflow/all")
-async def run_ams_workflow_all_devices():
-    """Run AMS-I.D workflow for all devices"""
-    try:
-        result = await ams_integration.run_complete_workflow()
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@app.get("/api/test/mock-status")
+async def get_mock_status():
+    """Get mock data stream status"""
+    return {
+        "mock_active": mock_data_active,
+        "timestamp": datetime.now().isoformat()
+    }
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -402,4 +481,5 @@ if __name__ == "__main__":
     print(f"📊 Dashboard: http://localhost:{port}")
     print(f"🔌 ESP32 endpoint: http://localhost:{port}/api/energy-data")
     print(f"📋 Supabase stats: http://localhost:{port}/api/supabase-stats")
+    # Bind to all interfaces so both localhost and ESP32 can connect
     uvicorn.run(app, host="0.0.0.0", port=port)
