@@ -12,6 +12,11 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 from dashboard_content import dashboard_html
 
+# Mock data functionality
+import random
+import threading
+import time
+
 # Load environment variables
 load_dotenv()
 
@@ -125,8 +130,6 @@ async def test_post(data: Dict[str, Any]):
         "received_data": data,
         "timestamp": datetime.now().isoformat()
     }
-
-
 
 @app.post("/api/energy-data")
 async def receive_energy_data(reading: Dict[str, Any]):
@@ -297,44 +300,62 @@ async def get_supabase_stats():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Supabase stats error: {str(e)}")
 
-
-# Mock data functionality
-import random
-import threading
-import time
-
 # Mock data control
 mock_data_active = False
 mock_data_thread = None
 
+import random
+from datetime import datetime, timedelta
+
+# Simulate accumulated energy for the session (global variable)
+total_energy_wh = 0
+last_mock_time = datetime.now()
+
 def generate_mock_data():
-    """Generate realistic mock ESP32 data"""
-    current_hour = datetime.now().hour
-    
-    # Solar irradiance follows daily cycle (6 AM to 6 PM)
+    """Generate realistic mock ESP32 data and accumulate energy as power sum over time"""
+    global total_energy_wh, last_mock_time
+
+    current_time = datetime.now()
+    delta_time_h = max(1, (current_time - last_mock_time).seconds / 3600)  # Assume 1 hour if first run
+
+    current_hour = current_time.hour
+    # Simulate irradiance curve (daylight hours)
     if 6 <= current_hour <= 18:
         base_irradiance = 800 * (1 - abs(current_hour - 12) / 6)
     else:
         base_irradiance = 0
-    
+
     irradiance = max(0, base_irradiance + random.uniform(-100, 100))
-    power = irradiance * 0.6 + random.uniform(-50, 50)  # 0.6W per W/m² with variation
-    power = max(0, power)  # Ensure non-negative power
-    
+    efficiency = round(0.85 + random.uniform(-0.05, 0.05), 3)
+    # Solar panel DC output (just for realism)
+    solar_power_dc = irradiance * 0.6 * efficiency + random.uniform(-50, 50)
+    solar_power_dc = max(0, solar_power_dc)
+
     voltage = 220 + random.uniform(-10, 10)
-    current = power / voltage if voltage > 0 else 0
-    
+    power_factor = round(0.95 + random.uniform(-0.05, 0.05), 3)
+    current = solar_power_dc / (voltage * power_factor) if voltage > 0 and power_factor > 0 else 0
+
+    # True AC power (for IoT grid monitoring)
+    power = voltage * current * power_factor
+    power = max(0, power)
+
+    # Accumulate total energy in kWh based on simulated hourly interval
+    total_energy_wh += power * delta_time_h
+    total_energy_kwh = round(total_energy_wh / 1000, 3)
+    last_mock_time = current_time
+
     return {
         "device_id": "ESP32_MOCK_001",
         "current": round(current, 2),
         "voltage": round(voltage, 1),
         "power": round(power, 1),
-        "total_energy_kwh": round(random.uniform(0.5, 5.0), 3),
-        "efficiency": round(0.85 + random.uniform(-0.05, 0.05), 3),
+        "total_energy_kwh": total_energy_kwh,
+        "efficiency": efficiency,
         "ambient_temp_c": round(25 + random.uniform(-5, 10), 1),
         "irradiance_w_m2": round(irradiance, 1),
-        "power_factor": round(0.95 + random.uniform(-0.05, 0.05), 3)
+        "power_factor": power_factor
     }
+
 
 async def send_mock_data():
     """Send mock data through the normal data processing pipeline"""
@@ -353,19 +374,6 @@ async def send_mock_data():
     # Keep only last 1000 readings in memory
     if len(readings_history) > 1000:
         readings_history.pop(0)
-    
-    # Store in Supabase
-    if supabase:
-        try:
-            db_reading = mock_reading.copy()
-            db_reading["timestamp"] = server_time.isoformat()
-            db_reading.pop("server_received_at", None)
-            
-            result = supabase.table("energy_readings").insert(db_reading).execute()
-            current_time = server_time.strftime("%H:%M:%S")
-            print(f"🧪 [{current_time}] Mock data stored: {mock_reading['device_id']} - {mock_reading['power']}W")
-        except Exception as e:
-            print(f"❌ Mock data Supabase error: {e}")
     
     # Broadcast to WebSocket clients
     await manager.broadcast(json.dumps({
