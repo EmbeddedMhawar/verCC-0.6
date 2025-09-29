@@ -1,8 +1,8 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request, Form, Cookie
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import asyncio
 import json
 from datetime import datetime
@@ -10,7 +10,20 @@ import uvicorn
 import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
-from dashboard_content import dashboard_html
+from dashboard_content import dashboard_html, guardian_landing_html, guardian_dashboard_html
+import hashlib
+import secrets
+
+# Import Guardian credentials manager
+try:
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'database'))
+    from guardian_credentials_manager import GuardianCredentialsManager
+    guardian_manager = GuardianCredentialsManager()
+    print("✅ Guardian Credentials Manager loaded")
+except Exception as e:
+    print(f"⚠️ Guardian Credentials Manager not available: {e}")
+    guardian_manager = None
 
 # Mock data functionality
 import random
@@ -93,10 +106,186 @@ latest_readings = {}
 readings_history = []
 device_last_seen = {}
 
+# Simple session storage (in production, use Redis or database)
+active_sessions = set()
+
 @app.get("/", response_class=HTMLResponse)
-async def get_dashboard():
-    """Serve the real-time dashboard"""
+async def get_landing_page():
+    """Serve the 'Become Our Partner' landing page"""
+    return HTMLResponse(content=guardian_landing_html, status_code=200)
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def get_dashboard(session_token: Optional[str] = Cookie(None)):
+    """Serve the Guardian credentials dashboard (authenticated users only)"""
+    if not session_token or session_token not in active_sessions:
+        return RedirectResponse(url="/?error=auth_required", status_code=302)
+    return HTMLResponse(content=guardian_dashboard_html, status_code=200)
+
+@app.get("/energy", response_class=HTMLResponse)
+async def get_energy_dashboard():
+    """Serve the energy monitoring dashboard"""
     return HTMLResponse(content=dashboard_html, status_code=200)
+
+@app.post("/auth")
+async def guardian_auth(request: Request, email: str = Form(...), password: str = Form(...)):
+    """Handle Guardian authentication"""
+    # Simple password check - you can customize this
+    # For demo purposes, any email with password "verifiedcc" works
+    if email and password == "verifiedcc":
+        # Create session token
+        session_token = secrets.token_urlsafe(32)
+        active_sessions.add(session_token)
+        
+        # Redirect to Guardian dashboard with session cookie
+        response = RedirectResponse(url="/dashboard", status_code=302)
+        response.set_cookie(
+            key="session_token", 
+            value=session_token, 
+            max_age=3600,  # 1 hour
+            httponly=True,
+            secure=False  # Set to True in production with HTTPS
+        )
+        return response
+    else:
+        # Redirect back to landing with error
+        return RedirectResponse(url="/?error=invalid", status_code=302)
+
+@app.get("/demo")
+async def demo_access():
+    """Direct demo access without credentials"""
+    # Create session token for demo
+    session_token = secrets.token_urlsafe(32)
+    active_sessions.add(session_token)
+    
+    # Redirect to Guardian dashboard with session cookie
+    response = RedirectResponse(url="/dashboard", status_code=302)
+    response.set_cookie(
+        key="session_token", 
+        value=session_token, 
+        max_age=3600,  # 1 hour
+        httponly=True,
+        secure=False  # Set to True in production with HTTPS
+    )
+    return response
+
+# Guardian API endpoints (protected)
+@app.get("/api/guardian/credentials")
+async def get_guardian_credentials(limit: int = 50, offset: int = 0, session_token: Optional[str] = Cookie(None)):
+    """Get Guardian credentials"""
+    if not session_token or session_token not in active_sessions:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    if not guardian_manager:
+        raise HTTPException(status_code=503, detail="Guardian service not available")
+    
+    try:
+        credentials = guardian_manager.list_credentials(limit=limit, offset=offset)
+        return {
+            "success": True,
+            "data": credentials,
+            "count": len(credentials)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/guardian/summary")
+async def get_guardian_summary(session_token: Optional[str] = Cookie(None)):
+    """Get Guardian credentials summary"""
+    if not session_token or session_token not in active_sessions:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    if not guardian_manager:
+        raise HTTPException(status_code=503, detail="Guardian service not available")
+    
+    try:
+        summary = guardian_manager.get_emission_reductions_summary()
+        return {
+            "success": True,
+            "data": summary
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/guardian/credentials")
+async def store_guardian_credential(credential_data: Dict[str, Any], session_token: Optional[str] = Cookie(None)):
+    """Store a Guardian credential"""
+    if not session_token or session_token not in active_sessions:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    if not guardian_manager:
+        raise HTTPException(status_code=503, detail="Guardian service not available")
+    
+    try:
+        if not guardian_manager.validate_credential_structure(credential_data):
+            raise HTTPException(status_code=400, detail="Invalid credential structure")
+        
+        credential_uuid = guardian_manager.insert_credential(credential_data)
+        
+        return {
+            "success": True,
+            "credential_uuid": credential_uuid,
+            "credential_id": credential_data.get('id'),
+            "organization": credential_data.get('credentialSubject', [{}])[0]
+                .get('participant_profile', {})
+                .get('organizationName', 'Unknown'),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/logout")
+async def logout(session_token: Optional[str] = Cookie(None)):
+    """Logout and clear session"""
+    if session_token and session_token in active_sessions:
+        active_sessions.remove(session_token)
+    
+    response = RedirectResponse(url="/", status_code=302)
+    response.delete_cookie("session_token")
+    return response
+
+@app.post("/signup")
+async def partner_signup(
+    request: Request,
+    company_name: str = Form(...),
+    contact_person: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(None),
+    country: str = Form(None),
+    project_type: str = Form(None),
+    project_description: str = Form(None),
+    expected_emission_reductions: Optional[float] = Form(None)
+):
+    """Handle partner signup"""
+    if not supabase:
+        return RedirectResponse(url="/?error=db_unavailable", status_code=302)
+    
+    try:
+        # Insert partner signup data
+        result = supabase.table("partners").insert({
+            "company_name": company_name,
+            "contact_person": contact_person,
+            "email": email,
+            "phone": phone,
+            "country": country,
+            "project_type": project_type,
+            "project_description": project_description,
+            "expected_emission_reductions": expected_emission_reductions,
+            "status": "pending"
+        }).execute()
+        
+        if result.data:
+            return RedirectResponse(url="/?success=signup", status_code=302)
+        else:
+            return RedirectResponse(url="/?error=signup_failed", status_code=302)
+            
+    except Exception as e:
+        print(f"❌ Partner signup error: {e}")
+        
+        # Check if it's a duplicate email error
+        if "duplicate key value" in str(e) or "unique constraint" in str(e):
+            return RedirectResponse(url="/?error=email_exists", status_code=302)
+        
+        return RedirectResponse(url="/?error=signup_failed", status_code=302)
 
 @app.get("/debug", response_class=HTMLResponse)
 async def get_debug_dashboard():

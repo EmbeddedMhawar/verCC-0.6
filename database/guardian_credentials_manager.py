@@ -206,6 +206,74 @@ class GuardianCredentialsManager:
             print(f"❌ Error getting emission reductions summary: {e}")
             return {}
     
+    def list_partners(self, limit: int = 50, offset: int = 0) -> List[Dict[str, Any]]:
+        """
+        List partner signups
+        
+        Args:
+            limit: Maximum number of records to return
+            offset: Number of records to skip
+            
+        Returns:
+            List of partner records
+        """
+        try:
+            result = self.supabase.from_("partners")\
+                .select("*")\
+                .order("created_at", desc=True)\
+                .range(offset, offset + limit - 1)\
+                .execute()
+            
+            return result.data if result.data else []
+            
+        except Exception as e:
+            print(f"❌ Error listing partners: {e}")
+            return []
+    
+    def get_partners_summary(self) -> Dict[str, Any]:
+        """
+        Get summary statistics of partner signups
+        
+        Returns:
+            Dictionary with summary statistics
+        """
+        try:
+            result = self.supabase.from_("partners")\
+                .select("status, country, project_type, expected_emission_reductions")\
+                .execute()
+            
+            if not result.data:
+                return {}
+            
+            total_partners = len(result.data)
+            by_status = {}
+            by_country = {}
+            by_project_type = {}
+            total_expected_reductions = 0
+            
+            for record in result.data:
+                status = record.get('status', 'Unknown')
+                country = record.get('country', 'Unknown')
+                project_type = record.get('project_type', 'Unknown')
+                expected_reductions = float(record.get('expected_emission_reductions', 0))
+                
+                by_status[status] = by_status.get(status, 0) + 1
+                by_country[country] = by_country.get(country, 0) + 1
+                by_project_type[project_type] = by_project_type.get(project_type, 0) + 1
+                total_expected_reductions += expected_reductions
+            
+            return {
+                'total_partners': total_partners,
+                'total_expected_reductions': total_expected_reductions,
+                'by_status': by_status,
+                'by_country': by_country,
+                'by_project_type': by_project_type
+            }
+            
+        except Exception as e:
+            print(f"❌ Error getting partners summary: {e}")
+            return {}
+    
     def validate_credential_structure(self, credential_data: Dict[str, Any]) -> bool:
         """
         Validate that the credential has the required structure

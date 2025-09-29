@@ -415,6 +415,27 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Partners signup table
+CREATE TABLE IF NOT EXISTS partners (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_name TEXT NOT NULL,
+    contact_person TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    phone TEXT,
+    country TEXT,
+    project_type TEXT,
+    project_description TEXT,
+    expected_emission_reductions DECIMAL(15, 6),
+    status TEXT DEFAULT 'pending', -- pending, approved, rejected
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create indexes for partners table
+CREATE INDEX IF NOT EXISTS idx_partners_email ON partners(email);
+CREATE INDEX IF NOT EXISTS idx_partners_status ON partners(status);
+CREATE INDEX IF NOT EXISTS idx_partners_created_at ON partners(created_at);
+
 -- Add updated_at triggers
 CREATE TRIGGER update_verifiable_credentials_updated_at
     BEFORE UPDATE ON verifiable_credentials
@@ -422,4 +443,8 @@ CREATE TRIGGER update_verifiable_credentials_updated_at
 
 CREATE TRIGGER update_project_participants_updated_at
     BEFORE UPDATE ON project_participants
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_partners_updated_at
+    BEFORE UPDATE ON partners
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

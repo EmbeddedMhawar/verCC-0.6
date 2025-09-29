@@ -74,6 +74,21 @@ class SummaryResponse(BaseModel):
 class ErrorResponse(BaseModel):
     error: str
 
+class PartnerSignupRequest(BaseModel):
+    company_name: str
+    contact_person: str
+    email: str
+    phone: Optional[str] = None
+    country: Optional[str] = None
+    project_type: Optional[str] = None
+    project_description: Optional[str] = None
+    expected_emission_reductions: Optional[float] = None
+
+class PartnerSignupResponse(BaseModel):
+    success: bool
+    message: str
+    partner_id: Optional[str] = None
+
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     """Health check endpoint"""
@@ -387,6 +402,88 @@ async def test_endpoint():
             detail=f"Failed to create test credential: {str(e)}"
         )
 
+@app.post("/api/partners/signup", response_model=PartnerSignupResponse)
+async def partner_signup(signup_data: PartnerSignupRequest):
+    """
+    Partner signup endpoint
+    """
+    if not credentials_manager:
+        raise HTTPException(
+            status_code=500,
+            detail="Database connection not available"
+        )
+    
+    try:
+        # Insert partner signup data
+        result = credentials_manager.supabase.table("partners").insert({
+            "company_name": signup_data.company_name,
+            "contact_person": signup_data.contact_person,
+            "email": signup_data.email,
+            "phone": signup_data.phone,
+            "country": signup_data.country,
+            "project_type": signup_data.project_type,
+            "project_description": signup_data.project_description,
+            "expected_emission_reductions": signup_data.expected_emission_reductions,
+            "status": "pending"
+        }).execute()
+        
+        if result.data:
+            partner_id = result.data[0]["id"]
+            logger.info(f"✅ Partner signup: {signup_data.email} - {signup_data.company_name}")
+            
+            return PartnerSignupResponse(
+                success=True,
+                message="Partnership application submitted successfully! We'll contact you soon.",
+                partner_id=partner_id
+            )
+        else:
+            raise Exception("Failed to insert partner data")
+            
+    except Exception as e:
+        logger.error(f"❌ Error in partner signup: {e}")
+        
+        # Check if it's a duplicate email error
+        if "duplicate key value" in str(e) or "unique constraint" in str(e):
+            raise HTTPException(
+                status_code=400,
+                detail="Email already registered. Please use a different email address."
+            )
+        
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to submit partnership application: {str(e)}"
+        )
+
+@app.get("/api/partners")
+async def list_partners(limit: int = Query(50, le=100), offset: int = Query(0, ge=0)):
+    """
+    List partner signups (admin endpoint)
+    """
+    if not credentials_manager:
+        raise HTTPException(
+            status_code=500,
+            detail="Database connection not available"
+        )
+    
+    try:
+        result = credentials_manager.supabase.table("partners")\
+            .select("*")\
+            .order("created_at", desc=True)\
+            .range(offset, offset + limit - 1)\
+            .execute()
+        
+        return {
+            "success": True,
+            "data": result.data,
+            "count": len(result.data)
+        }
+    except Exception as e:
+        logger.error(f"❌ Error listing partners: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to list partners: {str(e)}"
+        )
+
 if __name__ == '__main__':
     import uvicorn
     
@@ -401,6 +498,8 @@ if __name__ == '__main__':
     print("   GET  /api/credentials/location - Search by location")
     print("   GET  /api/summary - Get summary statistics")
     print("   POST /api/test - Create test credential")
+    print("   POST /api/partners/signup - Partner signup")
+    print("   GET  /api/partners - List partners")
     print("   GET  /docs - Interactive API documentation")
     print("")
     
