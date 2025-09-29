@@ -11,15 +11,28 @@ This project provides a clean ESP32 monitoring dashboard with real-time data vis
 ├── hardware/              # Hardware-related files (ESP32 Arduino code)
 │   └── enhanced_esp32_scada.ino
 ├── docs/                  # Documentation files
-│   └── DEPENDENCY_ANALYSIS.md
+│   ├── DEPENDENCY_ANALYSIS.md
+│   ├── Guardian_API_Complete_Guide.md
+│   └── Know_ur_ip.md
 ├── assets/                # Static assets (logos, images)
 │   └── verifiedcc-logo.png
 ├── database/              # Database setup and migrations
+│   ├── README_Guardian_Database.md
+│   ├── guardian_api_endpoint.py
+│   ├── guardian_credentials_manager.py
+│   ├── guardian_credentials_schema.sql
+│   ├── setup_guardian_db.py
 │   ├── setup_supabase.py
 │   └── supabase_setup.sql
-├── .env                   # Environment variables
-├── .env.example          # Environment template
-└── requirements.txt      # Python dependencies
+├── guardian_api_integration/ # Guardian API integration files
+│   └── AMS-I.D.py
+├── .vscode/               # VSCode settings
+│   ├── c_cpp_properties.json
+│   ├── launch.json
+│   └── settings.json
+├── index.html             # Main HTML file
+├── requirements.txt       # Python dependencies
+└── README.md              # This file
 ```
 
 ## Getting Started
