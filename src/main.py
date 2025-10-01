@@ -10,7 +10,7 @@ import uvicorn
 import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
-from dashboard_content import dashboard_html, guardian_landing_html, guardian_dashboard_html
+from .dashboard_content import dashboard_html, guardian_landing_html, guardian_dashboard_html
 import hashlib
 import secrets
 
