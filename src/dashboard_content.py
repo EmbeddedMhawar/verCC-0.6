@@ -151,9 +151,7 @@ guardian_landing_html = """<!DOCTYPE html>
             <div class="max-w-md mx-auto mt-20">
                 <div class="card-3d rounded-2xl p-8 border border-gray-200">
                     <div class="text-center mb-6">
-                        <div class="bg-gradient-to-r from-deep-ocean to-oasis-green text-white rounded-full h-16 w-16 mx-auto flex items-center justify-center mb-4">
-                            <i data-lucide="user-check" class="w-8 h-8"></i>
-                        </div>
+                        <img src="/static/verifiedcc-logo.png" alt="VerifiedCC Logo" class="h-16 w-auto mx-auto mb-4">
                         <h3 class="text-2xl font-bold text-deep-ocean">Become Our Partner</h3>
                         <p class="text-gray-600 mt-2">Access Guardian Verifiable Credentials Portal</p>
                     </div>
