@@ -144,7 +144,7 @@ guardian_landing_html = """<!DOCTYPE html>
 </head>
 <body class="bg-gray-50 text-deep-ocean min-h-screen">
     <!-- Header -->
-    <header class="bg-cloud-white/80 backdrop-blur-lg border-b border-gray-200 sticky top-0 z-50">
+    <header>
         <div class="container mx-auto px-6 py-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-4">
