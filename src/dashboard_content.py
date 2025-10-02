@@ -35,46 +35,25 @@ guardian_landing_html = """<!DOCTYPE html>
         body {
           min-height: 100vh;
           margin: 0;
-          background: linear-gradient(135deg, #FDB813, #2E8540);
+          /* Create a mixed gradient background */
+          background: linear-gradient(120deg, #FDB813 0%, #2E8540 100%);
           background-size: 200% 200%;
-          animation: gradientMove 5s ease-in-out infinite alternate;
+          animation: gradientFlow 8s linear infinite;
         }
 
-         @keyframes gradientMove {
+         @keyframes gradientFlow {
           0% {
             background-position: 0% 50%;
-            background: linear-gradient(135deg, #FDB813, #2E8540);
           }
           100% {
             background-position: 100% 50%;
-            background: linear-gradient(135deg, #2E8540, #FDB813);
           }
         }
         body { font-family: "Inter", sans-serif; }
         
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(1deg); }
-        }
-        
         @keyframes glow {
             from { box-shadow: 0 0 20px rgba(253, 184, 19, 0.3); }
             to { box-shadow: 0 0 40px rgba(253, 184, 19, 0.6), 0 0 60px rgba(46, 133, 64, 0.3); }
-        }
-        
-        .hero-bg {
-            background: #f8fafc;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .hero-bg::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at 20% 30%, rgba(253, 184, 19, 0.1), transparent 50%),
-                        radial-gradient(circle at 80% 70%, rgba(46, 133, 64, 0.1), transparent 50%);
-            animation: float 8s ease-in-out infinite;
         }
         
         .card-3d {
@@ -161,7 +140,7 @@ guardian_landing_html = """<!DOCTYPE html>
     </style>
 </head>
 <body class="bg-gray-50 text-deep-ocean min-h-screen">
-    <main class="hero-bg relative z-10">
+    <main class="relative z-10">
         <div class="container mx-auto px-6 py-8">
 
 
@@ -399,29 +378,10 @@ guardian_dashboard_html = """<!DOCTYPE html>
     <style>
         body { font-family: "Inter", sans-serif; }
         
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(1deg); }
-        }
         
         @keyframes glow {
             from { box-shadow: 0 0 20px rgba(253, 184, 19, 0.3); }
             to { box-shadow: 0 0 40px rgba(253, 184, 19, 0.6), 0 0 60px rgba(46, 133, 64, 0.3); }
-        }
-        
-        .hero-bg {
-            background: #f8fafc;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .hero-bg::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at 20% 30%, rgba(253, 184, 19, 0.1), transparent 50%),
-                        radial-gradient(circle at 80% 70%, rgba(46, 133, 64, 0.1), transparent 50%);
-            animation: float 8s ease-in-out infinite;
         }
         
         .card-3d {
@@ -474,7 +434,7 @@ guardian_dashboard_html = """<!DOCTYPE html>
         </div>
     </header>
 
-    <main class="hero-bg relative z-10">
+    <main class="relative z-10">
         <div class="container mx-auto px-6 py-8">
             <!-- Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -877,10 +837,6 @@ dashboard_html = """<!DOCTYPE html>
             font-family: "Inter", sans-serif;
         }
         
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(1deg); }
-        }
         
         @keyframes glow {
             from { box-shadow: 0 0 20px rgba(253, 184, 19, 0.3); }
@@ -906,25 +862,6 @@ dashboard_html = """<!DOCTYPE html>
         
         .card-3d:hover {
             transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
-        }
-        
-        .hero-bg {
-            background: #f8fafc;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .hero-bg::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 20% 30%, rgba(253, 184, 19, 0.1), transparent 50%),
-                        radial-gradient(circle at 80% 70%, rgba(46, 133, 64, 0.1), transparent 50%),
-                        radial-gradient(circle at 40% 80%, rgba(0, 63, 92, 0.05), transparent 50%);
-            animation: float 8s ease-in-out infinite;
         }
         
         .status-indicator {
@@ -981,7 +918,7 @@ dashboard_html = """<!DOCTYPE html>
         </div>
     </header>
 
-    <main class="hero-bg relative z-10">
+    <main class="relative z-10">
         <div class="container mx-auto px-6 py-8">
             <!-- Carbon Credits Hero Section -->
             <div class="bg-gradient-to-r from-oasis-green to-desert-sand rounded-2xl p-8 md:p-12 text-cloud-white text-center shadow-2xl mb-8 animate-slide-up">
