@@ -6,7 +6,29 @@ guardian_landing_html = '''<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>VerifiedCC Gradient Landing</title>
   <!-- Inter font for modern look -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght @400;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "desert-sand": "#FDB813",
+                        "oasis-green": "#2E8540",
+                        "deep-ocean": "#003F5C",
+                        "cloud-white": "#FFFFFF",
+                    },
+                    animation: {
+                        float: "float 6s ease-in-out infinite",
+                        glow: "glow 2s ease-in-out infinite alternate",
+                        "slide-up": "slideUp 0.8s ease-out",
+                        "fade-in": "fadeIn 1s ease-out",
+                    },
+                },
+            },
+        };
+    </script>
   <style>
     :root {
       --color-bg1: #FDB813;
@@ -110,9 +132,22 @@ guardian_landing_html = '''<!DOCTYPE html>
       align-items: center;
       justify-content: center;
     }
+    .interactive {
+      position: fixed;
+      top: -100px;
+      left: -100px;
+      width: 200px;
+      height: 200px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 100;
+      transition: transform 0.1s ease-out;
+    }
   </style>
 </head>
 <body>
+  <div class="interactive"></div>
   <div class="gradient-bg">
     <div class="gradients-container">
       <div class="g1"></div>
@@ -123,16 +158,218 @@ guardian_landing_html = '''<!DOCTYPE html>
     </div>
   </div>
   <main>
-    <!-- Your page content here -->
-    <div style="text-align:center; background:rgba(255,255,255,0.85);padding:2rem 3rem;border-radius:2rem;box-shadow:0 8px 40px rgba(46,133,64,0.15);max-width:400px;">
-      <img src="/static/verifiedcc-logo.png" alt="VerifiedCC Logo" style="height:4rem;width:auto;margin-bottom:1.5rem;">
-      <h2 style="color:#2E8540; font-size:2rem; margin-bottom:1rem;">Become VerifiedCC Partner</h2>
-      <p style="color:#003F5C;">Access the Guardian Verifiable Credentials Portal</p>
-      <a href="/auth" style="display:inline-block;margin-top:2rem;background:linear-gradient(90deg,#2E8540 0%,#FDB813 100%);color:#fff;padding:0.8rem 2rem;font-weight:bold;border-radius:1rem;box-shadow:0 2px 16px #fdb81360;text-decoration:none;transition:transform 0.2s;">
-        Access Dashboard
-      </a>
+    <div class="max-w-md mx-auto">
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl p-8 border border-gray-200/50 shadow-2xl">
+            <div class="text-center mb-6">
+                <img src="/static/verifiedcc-logo.png" alt="VerifiedCC Logo" class="h-16 w-auto mx-auto mb-4">
+                <h3 class="text-2xl font-bold text-deep-ocean">Become Our Partner</h3>
+                <p class="text-gray-600 mt-2">Access Guardian Verifiable Credentials Portal</p>
+            </div>
+
+            <form action="/auth" method="POST" class="space-y-6">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-deep-ocean mb-2">Email Address</label>
+                    <input type="email" id="email" name="email" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-oasis-green focus:border-transparent transition-colors bg-white/50"
+                           placeholder="partner@company.com">
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-deep-ocean mb-2">Password</label>
+                    <input type="password" id="password" name="password" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-oasis-green focus:border-transparent transition-colors bg-white/50"
+                           placeholder="••••••••">
+                    <p class="text-xs text-gray-500 mt-1">Demo password: <code class="bg-gray-100 px-1 rounded">verifiedcc</code></p>
+                </div>
+
+                <button type="submit" 
+                        class="w-full bg-gradient-to-r from-oasis-green to-desert-sand text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <i data-lucide="log-in" class="w-5 h-5 inline mr-2"></i>
+                    Access Dashboard
+                </button>
+            </form>
+
+            <div class="mt-4">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white/80 text-gray-500">Or</span>
+                    </div>
+                </div>
+                
+                <button id="demoBtn" type="button" 
+                        class="w-full mt-4 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <i data-lucide="play-circle" class="w-5 h-5 inline mr-2"></i>
+                    Try Demo Account
+                </button>
+            </div>
+
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600">
+                    New partner? 
+                    <button id="signupBtn" type="button" class="text-oasis-green hover:text-green-700 font-medium underline">
+                        Sign up for partnership
+                    </button>
+                </p>
+            </div>
+
+            <!-- Signup Form (initially hidden) -->
+            <div id="signupForm" class="hidden mt-6 border-t border-gray-200 pt-6">
+                <h4 class="text-lg font-bold text-deep-ocean mb-4 text-center">Partner Signup</h4>
+                <form action="/signup" method="POST" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="company_name" class="block text-sm font-medium text-deep-ocean mb-1">Company Name *</label>
+                            <input type="text" id="company_name" name="company_name" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-oasis-green focus:border-transparent transition-colors text-sm bg-white/50">
+                        </div>
+                        <div>
+                            <label for="contact_person" class="block text-sm font-medium text-deep-ocean mb-1">Contact Person *</label>
+                            <input type="text" id="contact_person" name="contact_person" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-oasis-green focus:border-transparent transition-colors text-sm bg-white/50">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="signup_email" class="block text-sm font-medium text-deep-ocean mb-1">Email Address *</label>
+                            <input type="email" id="signup_email" name="email" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-oasis-green focus:border-transparent transition-colors text-sm bg-white/50">
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-deep-ocean mb-1">Phone</label>
+                            <input type="tel" id="phone" name="phone"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-oasis-green focus:border-transparent transition-colors text-sm bg-white/50">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="country" class="block text-sm font-medium text-deep-ocean mb-1">Country</label>
+                            <input type="text" id="country" name="country"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-oasis-green focus:border-transparent transition-colors text-sm bg-white/50">
+                        </div>
+                        <div>
+                            <label for="project_type" class="block text-sm font-medium text-deep-ocean mb-1">Project Type</label>
+                            <select id="project_type" name="project_type"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-oasis-green focus:border-transparent transition-colors text-sm bg-white/50">
+                                <option value="">Select type</option>
+                                <option value="Solar">Solar</option>
+                                <option value="Wind">Wind</option>
+                                <option value="Hydro">Hydro</option>
+                                <option value="Biomass">Biomass</option>
+                                <option value="Geothermal">Geothermal</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="expected_emission_reductions" class="block text-sm font-medium text-deep-ocean mb-1">Expected Emission Reductions (tCO2/year)</label>
+                        <input type="number" id="expected_emission_reductions" name="expected_emission_reductions" step="0.01"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-oasis-green focus:border-transparent transition-colors text-sm bg-white/50">
+                    </div>
+                    
+                    <div>
+                        <label for="project_description" class="block text-sm font-medium text-deep-ocean mb-1">Project Description</label>
+                        <textarea id="project_description" name="project_description" rows="3"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-oasis-green focus:border-transparent transition-colors text-sm bg-white/50"
+                                  placeholder="Brief description of your renewable energy project..."></textarea>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button type="submit" 
+                                class="flex-1 bg-oasis-green hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg text-sm">
+                            <i data-lucide="user-plus" class="w-4 h-4 inline mr-2"></i>
+                            Submit Application
+                        </button>
+                        <button type="button" id="cancelSignupBtn"
+                                class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
   </main>
+  <script>
+    lucide.createIcons();
+    
+    // Check for URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    const success = urlParams.get('success');
+    
+    // Handle error messages
+    if (error === 'invalid') {
+        alert('Invalid credentials. Please use password: verifiedcc');
+    } else if (error === 'auth_required') {
+        alert('Please sign in to access the dashboard.');
+    } else if (error === 'email_exists') {
+        alert('Email already registered. Please use a different email address.');
+    } else if (error === 'signup_failed') {
+        alert('Signup failed. Please try again.');
+    } else if (error === 'db_unavailable') {
+        alert('Database unavailable. Please try again later.');
+    }
+    
+    // Handle success messages
+    if (success === 'signup') {
+        alert('Partnership application submitted successfully! We will contact you soon.');
+    }
+
+    // Demo button handler
+    document.getElementById('demoBtn').addEventListener('click', function() {
+        // Auto-fill demo credentials
+        document.getElementById('email').value = 'demo@verifiedcc.com';
+        document.getElementById('password').value = 'verifiedcc';
+        
+        // Submit the form
+        document.querySelector('form').submit();
+    });
+
+    // Signup form toggle
+    document.getElementById('signupBtn').addEventListener('click', function() {
+        const signupForm = document.getElementById('signupForm');
+        signupForm.classList.remove('hidden');
+        signupForm.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    document.getElementById('cancelSignupBtn').addEventListener('click', function() {
+        const signupForm = document.getElementById('signupForm');
+        signupForm.classList.add('hidden');
+        // Reset form
+        signupForm.querySelector('form').reset();
+    });
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const interBubble = document.querySelector('.interactive');
+        if (interBubble) {
+            let curX = 0;
+            let curY = 0;
+            let tgX = 0;
+            let tgY = 0;
+
+            function move() {
+                curX += (tgX - curX) / 20;
+                curY += (tgY - curY) / 20;
+                interBubble.style.transform = `translate(${Math.round(curX)}px, ${Math.round(curY)}px)`;
+                requestAnimationFrame(move);
+            }
+
+            window.addEventListener('mousemove', (event) => {
+                tgX = event.clientX;
+                tgY = event.clientY;
+            });
+
+            move();
+        }
+    });
+  </script>
 </body>
 </html>'''
 
