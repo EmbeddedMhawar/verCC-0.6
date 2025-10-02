@@ -32,6 +32,24 @@ guardian_landing_html = """<!DOCTYPE html>
         };
     </script>
     <style>
+        body {
+          min-height: 100vh;
+          margin: 0;
+          background: linear-gradient(135deg, #FDB813, #2E8540);
+          background-size: 200% 200%;
+          animation: gradientMove 5s ease-in-out infinite alternate;
+        }
+
+         @keyframes gradientMove {
+          0% {
+            background-position: 0% 50%;
+            background: linear-gradient(135deg, #FDB813, #2E8540);
+          }
+          100% {
+            background-position: 100% 50%;
+            background: linear-gradient(135deg, #2E8540, #FDB813);
+          }
+        }
         body { font-family: "Inter", sans-serif; }
         
         @keyframes float {
