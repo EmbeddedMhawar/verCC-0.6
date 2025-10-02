@@ -2,7 +2,7 @@
 guardian_landing_html = """<!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
-    <title>VerifiedCC - Guardian Credentials Portal</title>
+    <title>VerifiedCC - Become Our Partner</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="/static/verifiedcc-logo.png" />
@@ -143,26 +143,6 @@ guardian_landing_html = """<!DOCTYPE html>
     </style>
 </head>
 <body class="bg-gray-50 text-deep-ocean min-h-screen">
-    <!-- Header -->
-    <header>
-        <div class="container mx-auto px-6 py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-4">
-                    <img src="/static/verifiedcc-logo.png" alt="VerifiedCC Logo" class="h-12 w-auto" 
-                         style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); max-width:150px;"
-                         onerror="this.onerror=null; this.src='/static/verifiedcc-logo.png';"/>
-                    <div>
-                        <h1 class="text-2xl font-bold text-deep-ocean">Guardian Credentials</h1>
-                        <p class="text-sm text-gray-600">Verifiable Carbon Credit Management</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <!-- Navigation removed as requested -->
-                </div>
-            </div>
-        </div>
-    </header>
-
     <main class="hero-bg relative z-10">
         <div class="container mx-auto px-6 py-8">
 
