@@ -285,28 +285,7 @@ guardian_landing_html = """<!DOCTYPE html>
                 </div>
             </div>
 
-            <!-- Call to Action -->
-            <div class="text-center mt-12">
-                <div class="bg-gradient-to-r from-deep-ocean to-blue-900 rounded-2xl p-8 text-white">
-                    <h3 class="text-2xl font-bold mb-4">Ready to Transform Your Carbon Credits?</h3>
-                    <p class="text-lg opacity-90 mb-6 max-w-2xl mx-auto">
-                        Join leading renewable energy producers who are already benefiting from automated, 
-                        AI-powered carbon credit verification and trading.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <a href="mailto:partners@verifiedcc.com" 
-                           class="bg-desert-sand text-deep-ocean font-bold px-8 py-3 rounded-lg hover:brightness-105 transition-transform hover:scale-105">
-                            <i data-lucide="mail" class="w-5 h-5 inline mr-2"></i>
-                            Contact Partnership Team
-                        </a>
-                        <a href="/energy" 
-                           class="border-2 border-gray-300 text-white font-semibold px-8 py-3 rounded-lg hover:bg-white/10 transition-colors">
-                            <i data-lucide="zap" class="w-5 h-5 inline mr-2"></i>
-                            Energy Dashboard
-                        </a>
-                    </div>
-                </div>
-            </div>
+
         </div>
     </main>
 
