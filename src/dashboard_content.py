@@ -1837,7 +1837,7 @@ dashboard_html = """<!DOCTYPE html>
             }
             
             if (stopStreamBtn) {
-                stopStreamBtn.addEventListener('click', stopMockStream);
+                stopStreamBtn.addEventListener('click', stopStreamBtn);
             } else {
                 console.error('stopStreamBtn not found');
             }
@@ -1866,4 +1866,5 @@ dashboard_html = """<!DOCTYPE html>
         lucide.createIcons();
     </script>
 </body>
-</html>"""
+</html>
+"""
