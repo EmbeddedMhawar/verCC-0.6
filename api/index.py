@@ -79,27 +79,27 @@ except Exception as e:
     supabase = None
 
 # WebSocket connection manager
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: List[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        if websocket in self.active_connections:
-            self.active_connections.remove(websocket)
-
-    async def broadcast(self, message: str):
-        for connection in self.active_connections[:]:  # Create a copy to avoid modification during iteration
-            try:
-                await connection.send_text(message)
-            except:
-                # Remove dead connections
-                self.active_connections.remove(connection)
-
-manager = ConnectionManager()
+# class ConnectionManager:
+#     def __init__(self):
+#         self.active_connections: List[WebSocket] = []
+# 
+#     async def connect(self, websocket: WebSocket):
+#         await websocket.accept()
+#         self.active_connections.append(websocket)
+# 
+#     def disconnect(self, websocket: WebSocket):
+#         if websocket in self.active_connections:
+#             self.active_connections.remove(websocket)
+# 
+#     async def broadcast(self, message: str):
+#         for connection in self.active_connections[:]:  # Create a copy to avoid modification during iteration
+#             try:
+#                 await connection.send_text(message)
+#             except:
+#                 # Remove dead connections
+#                 self.active_connections.remove(connection)
+# 
+# manager = ConnectionManager()
 
 # Store latest readings in memory
 latest_readings = {}
@@ -378,14 +378,14 @@ async def receive_energy_data(reading: Dict[str, Any]):
                 print(f"❌ [{current_time}] Supabase insert error: {e}")
         
         # Broadcast to WebSocket clients
-        try:
-            await manager.broadcast(json.dumps({
-                "type": "energy_reading",
-                "data": reading
-            }))
-            print(f"📡 [{current_time}] Broadcasted to WebSocket clients")
-        except Exception as e:
-            print(f"❌ [{current_time}] WebSocket broadcast error: {e}")
+        # try:
+        #     await manager.broadcast(json.dumps({
+        #         "type": "energy_reading",
+        #         "data": reading
+        #     }))
+        #     print(f"📡 [{current_time}] Broadcasted to WebSocket clients")
+        # except Exception as e:
+        #     print(f"❌ [{current_time}] WebSocket broadcast error: {e}")
         
         print(f"✅ [{current_time}] SUCCESS: Received data from {reading['device_id']}: {reading['power']}W")
         
@@ -565,10 +565,10 @@ async def send_mock_data():
         readings_history.pop(0)
     
     # Broadcast to WebSocket clients
-    await manager.broadcast(json.dumps({
-        "type": "energy_reading",
-        "data": mock_reading
-    }))
+    # await manager.broadcast(json.dumps({
+    #     "type": "energy_reading",
+    #     "data": mock_reading
+    # }))
     
     current_time = server_time.strftime("%H:%M:%S")
     print(f"🧪 [{current_time}] Mock data sent: {mock_reading['device_id']} - {mock_reading['power']}W")
@@ -653,21 +653,21 @@ async def get_mock_status():
         "timestamp": datetime.now().isoformat()
     }
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    """WebSocket endpoint for real-time data"""
-    await manager.connect(websocket)
-    try:
-        while True:
-            # Send latest readings every 5 seconds
-            if latest_readings:
-                await websocket.send_text(json.dumps({
-                    "type": "latest_readings",
-                    "data": latest_readings
-                }))
-            await asyncio.sleep(5)
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
+# @app.websocket("/ws")
+# async def websocket_endpoint(websocket: WebSocket):
+#     """WebSocket endpoint for real-time data"""
+#     await manager.connect(websocket)
+#     try:
+#         while True:
+#             # Send latest readings every 5 seconds
+#             if latest_readings:
+#                 await websocket.send_text(json.dumps({
+#                     "type": "latest_readings",
+#                     "data": latest_readings
+#                 }))
+#             await asyncio.sleep(5)
+#     except WebSocketDisconnect:
+#         manager.disconnect(websocket)
 
 # Dashboard HTML is imported from dashboard_content.py
 

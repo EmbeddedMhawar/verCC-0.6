@@ -119,37 +119,37 @@ export default function Dashboard() {
   useEffect(() => {
     lucide.createIcons();
 
-    ws.current = new WebSocket(`ws://${window.location.host}/ws`);
+    // ws.current = new WebSocket(`ws://${window.location.host}/ws`);
 
-    ws.current.onopen = () => {
-      const statusText = document.getElementById('statusText');
-      const statusDot = document.getElementById('statusDot');
-      const connectionStatus = document.getElementById('connectionStatus');
-      if (statusText) statusText.textContent = 'Connected';
-      if (statusDot) statusDot.className = 'w-2 h-2 rounded-full mr-2 bg-oasis-green animate-pulse';
-      if (connectionStatus) connectionStatus.className = 'status-indicator online inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-oasis-green';
-    };
+    // ws.current.onopen = () => {
+    //   const statusText = document.getElementById('statusText');
+    //   const statusDot = document.getElementById('statusDot');
+    //   const connectionStatus = document.getElementById('connectionStatus');
+    //   if (statusText) statusText.textContent = 'Connected';
+    //   if (statusDot) statusDot.className = 'w-2 h-2 rounded-full mr-2 bg-oasis-green animate-pulse';
+    //   if (connectionStatus) connectionStatus.className = 'status-indicator online inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-oasis-green';
+    // };
 
-    ws.current.onclose = () => {
-      const statusText = document.getElementById('statusText');
-      const statusDot = document.getElementById('statusDot');
-      const connectionStatus = document.getElementById('connectionStatus');
-      if (statusText) statusText.textContent = 'Disconnected';
-      if (statusDot) statusDot.className = 'w-2 h-2 rounded-full mr-2 bg-red-500';
-      if (connectionStatus) connectionStatus.className = 'status-indicator offline inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-red-100 text-red-600';
-    };
+    // ws.current.onclose = () => {
+    //   const statusText = document.getElementById('statusText');
+    //   const statusDot = document.getElementById('statusDot');
+    //   const connectionStatus = document.getElementById('connectionStatus');
+    //   if (statusText) statusText.textContent = 'Disconnected';
+    //   if (statusDot) statusDot.className = 'w-2 h-2 rounded-full mr-2 bg-red-500';
+    //   if (connectionStatus) connectionStatus.className = 'status-indicator offline inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-red-100 text-red-600';
+    // };
 
-    ws.current.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (message.type === 'energy_reading') {
-        updateDashboard(message.data);
-        updateCharts(message.data);
-      } else if (message.type === 'latest_readings') {
-        Object.values(message.data).forEach((reading: any) => {
-          updateDashboard(reading);
-        });
-      }
-    };
+    // ws.current.onmessage = (event) => {
+    //   const message = JSON.parse(event.data);
+    //   if (message.type === 'energy_reading') {
+    //     updateDashboard(message.data);
+    //     updateCharts(message.data);
+    //   } else if (message.type === 'latest_readings') {
+    //     Object.values(message.data).forEach((reading: any) => {
+    //       updateDashboard(reading);
+    //     });
+    //   }
+    // };
 
     fetch('/api/latest-readings')
       .then(response => response.json())
@@ -161,9 +161,9 @@ export default function Dashboard() {
       })
       .catch(error => console.error('Error fetching initial data:', error));
 
-    return () => {
-      ws.current?.close();
-    };
+    // return () => {
+    //   ws.current?.close();
+    // };
   }, []);
 
   return (
