@@ -1,0 +1,32 @@
+
+'use client';
+
+import { useEffect } from 'react';
+
+export default function InteractiveElement() {
+  useEffect(() => {
+    const interBubble = document.querySelector<HTMLElement>('.interactive');
+    if (interBubble) {
+      let curX = 0;
+      let curY = 0;
+      let tgX = 0;
+      let tgY = 0;
+
+      function move() {
+        curX += (tgX - curX) / 20;
+        curY += (tgY - curY) / 20;
+        interBubble.style.transform = `translate(${Math.round(curX)}px, ${Math.round(curY)}px)`;
+        requestAnimationFrame(move);
+      }
+
+      window.addEventListener('mousemove', (event) => {
+        tgX = event.clientX;
+        tgY = event.clientY;
+      });
+
+      move();
+    }
+  }, []);
+
+  return <div className="interactive"></div>;
+}

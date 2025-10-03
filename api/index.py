@@ -10,14 +10,14 @@ import uvicorn
 import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
-from .dashboard_content import dashboard_html, guardian_landing_html, guardian_dashboard_html
+from dashboard_content import dashboard_html, guardian_landing_html, guardian_dashboard_html
 import hashlib
 import secrets
 
 # Import Guardian credentials manager
 try:
     import sys
-    sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'database'))
+    sys.path.append(os.path.join(os.path.dirname(__file__), 'database'))
     from guardian_credentials_manager import GuardianCredentialsManager
     guardian_manager = GuardianCredentialsManager()
     print("✅ Guardian Credentials Manager loaded")
@@ -38,7 +38,7 @@ app = FastAPI(title="ESP32 Carbon Credit Backend", version="0.6")
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

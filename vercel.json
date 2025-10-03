@@ -1,15 +1,22 @@
 {
-  "version": 2,
   "builds": [
     {
-      "src": "src/main.py",
+      "src": "frontend/next.config.js",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "api/index.py",
       "use": "@vercel/python"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "src/main.py"
+      "source": "/api/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/frontend/$1"
     }
   ]
 }
